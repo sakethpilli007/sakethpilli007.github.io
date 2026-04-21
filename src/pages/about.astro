@@ -1,0 +1,534 @@
+---
+/**
+ * About, RPG CHARACTER SHEET.
+ *
+ * Concept: you've opened the "Character" screen. Portrait on the left, stat
+ * block on the right, a bio scroll underneath, and little loot / passport /
+ * inventory panels scattered around. Intentionally not a standard "about me"
+ * card layout, this is the player's handbook entry for Saketh.
+ *
+ * HP and MP are computed client-side in LONDON TIME:
+ *   HP drains from 100 at ~08:00 to 50 by ~22:00, then regenerates overnight.
+ *   MP tops up to 100 at each meal (07:00 / 13:00 / 18:00) and decays between.
+ *   INT permanently glitches on a ~200ms interval, never shows a real value.
+ */
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { config } from '~/config';
+
+// Inventory tiles, "tools in my bag" framed as game items.
+// Rarity controls background colour; slot is the flavour label.
+const inventory = [
+  { name: 'Java',        slot: 'Primary spell',   rarity: 'legendary' },
+  { name: 'Python',      slot: 'Secondary spell', rarity: 'epic'      },
+  { name: 'OCaml',       slot: 'Utility belt',    rarity: 'rare'      },
+  { name: 'GLSL',        slot: 'Situational',     rarity: 'common'    },
+  { name: 'Chalk',       slot: 'Teaching tool',   rarity: 'uncommon'  },
+  { name: 'Mathematics', slot: 'Ancestral relic', rarity: 'legendary' },
+];
+
+// Rarity to visual class. Black/red/yellow palette, high contrast.
+const rarityClass = (r: string) =>
+  r === 'legendary' ? 'bg-zap-400 text-ink-900' :           // gold/black
+  r === 'epic'      ? 'bg-ink-900 text-paper' :             // ink-inked
+  r === 'rare'      ? 'bg-pow-500 text-paper' :             // pow-red
+  r === 'uncommon'  ? 'bg-zap-200 text-ink-900' :           // pale yellow
+                      'bg-paper text-ink-900';              // common: plain
+---
+
+<BaseLayout title="About" description={config.summary}>
+  <!-- ── CHARACTER SHEET BANNER ───────────────────────────────────────── -->
+  <section class="container-wide pt-12 pb-4">
+    <div class="flex items-end justify-between flex-wrap gap-3 mb-4">
+      <div>
+        <span class="eyebrow">Character sheet</span>
+        <h1 class="font-display text-5xl md:text-7xl leading-[0.9]">Party member</h1>
+      </div>
+      <span class="font-ui text-xs text-ink-700 tracking-[0.25em]">&lt;CHAR · 01&gt;</span>
+    </div>
+
+    <!-- Two-column: portrait card on the left, name/class/summary on the right -->
+    <div class="grid md:grid-cols-[auto_minmax(0,1fr)] gap-6 items-start">
+      <!-- Portrait card with stamped "LVL 19" and a class ribbon -->
+      <div class="relative w-fit mx-auto md:mx-0">
+        <div
+          class="panel panel-flat p-3 bg-paper w-[220px]"
+          style="transform: rotate(-1.6deg);"
+        >
+          <img
+            src="/assets/images/saketh.jpg"
+            alt={`${config.name.formal} portrait`}
+            width="320"
+            height="320"
+            loading="eager"
+            decoding="async"
+            class="block w-[200px] h-[200px] object-cover border-3 border-ink-900"
+          />
+          <p class="mt-3 font-display text-2xl text-center leading-none text-ink-900">{config.name.first.toUpperCase()}</p>
+          <p class="mt-1 font-ui text-[0.6rem] text-ink-700 tracking-[0.25em] text-center">
+            CLASS · PROOFMAGE
+          </p>
+        </div>
+        <!-- "LVL 19" stamp -->
+        <span
+          class="absolute -top-4 -right-4 inline-block bg-pow-500 text-paper font-display text-xl px-3 py-1 border-3 border-ink-900 shadow-comic-sm"
+          style="transform: rotate(9deg);"
+        >LVL 19</span>
+        <!-- "PLAYABLE" ribbon across the bottom -->
+        <span
+          class="absolute -bottom-3 left-1/2 -translate-x-1/2 inline-block bg-zap-400 text-ink-900 font-ui text-[0.6rem] tracking-[0.25em] px-3 py-1 border-3 border-ink-900 shadow-comic-sm whitespace-nowrap"
+          style="transform: rotate(-2deg);"
+        >PLAYABLE</span>
+      </div>
+
+      <!-- Name plate + stat block -->
+      <div>
+        <div class="panel panel-tilt-r">
+          <p class="font-ui text-[0.7rem] tracking-[0.25em] text-ink-700 mb-1">NAME</p>
+          <h2 class="font-display text-4xl md:text-5xl leading-none mb-4 text-ink-900">{config.name.formal}</h2>
+          <p class="font-heavy uppercase text-sm tracking-wider text-pow-600 mb-3">
+            First-year CS · Churchill College, Cambridge
+          </p>
+          <p class="text-ink-800 leading-relaxed">
+            {config.summary}
+          </p>
+        </div>
+
+        <!-- Stat grid under the name plate.
+             Six slots. HP / MP / INT are dynamic (see inline script below).
+             STR / DEX / LCK are fixed. All values live in data-* attributes
+             so the script can target them without hunting around the DOM.
+
+             Each card is a `.stat-card` so the comic speech-bubble tooltip
+             (inside `.stat-tip`) can pop on :hover / :focus-within. The
+             tooltip styles and animation live in global.css.  -->
+        <div class="mt-5 grid grid-cols-2 md:grid-cols-3 gap-3">
+          <!-- HP -->
+          <div
+            class="stat-card relative border-3 border-ink-900 bg-paper p-3 shadow-comic-sm"
+            style="transform: rotate(-0.4deg);"
+            data-stat="hp"
+            tabindex="0"
+          >
+            <div class="flex items-baseline justify-between gap-2">
+              <span class="font-display text-2xl leading-none text-ink-900">HP</span>
+              <span class="font-ui text-[0.65rem] text-ink-700 tracking-widest">Health</span>
+            </div>
+            <p class="mt-1 font-mono text-sm text-ink-900 whitespace-pre" data-stat-value>100 / 100</p>
+            <p class="mt-0.5 text-[0.7rem] text-ink-800 italic leading-snug" data-stat-note>
+              waking up, probably in class
+            </p>
+            <span class="stat-tip" role="tooltip">
+              <strong class="font-heavy uppercase tracking-wider text-pow-600">Health!</strong>
+              Drains 100 → 50 between 08:00 and 22:00 London time, then regens overnight. Live-updating, if you squint, you can watch me get tired.
+            </span>
+          </div>
+
+          <!-- MP -->
+          <div
+            class="stat-card relative border-3 border-ink-900 bg-paper p-3 shadow-comic-sm"
+            style="transform: rotate(0.4deg);"
+            data-stat="mp"
+            tabindex="0"
+          >
+            <div class="flex items-baseline justify-between gap-2">
+              <span class="font-display text-2xl leading-none text-ink-900">MP</span>
+              <span class="font-ui text-[0.65rem] text-ink-700 tracking-widest">Fuel</span>
+            </div>
+            <p class="mt-1 font-mono text-sm text-ink-900 whitespace-pre" data-stat-value>100 / 100</p>
+            <p class="mt-0.5 text-[0.7rem] text-ink-800 italic leading-snug" data-stat-note>
+              just ate, running hot
+            </p>
+            <span class="stat-tip" role="tooltip">
+              <strong class="font-heavy uppercase tracking-wider text-pow-600">Mana / fuel!</strong>
+              Tops up to 100 at each meal (07:00 / 13:00 / 18:00 London), decays between. Ask me for help right after lunch, not just before it.
+            </span>
+          </div>
+
+          <!-- STR -->
+          <div
+            class="stat-card relative border-3 border-ink-900 bg-paper p-3 shadow-comic-sm"
+            style="transform: rotate(-0.4deg);"
+            tabindex="0"
+          >
+            <div class="flex items-baseline justify-between gap-2">
+              <span class="font-display text-2xl leading-none text-ink-900">STR</span>
+              <span class="font-ui text-[0.65rem] text-ink-700 tracking-widest">Strength</span>
+            </div>
+            <p class="mt-1 font-mono text-sm text-ink-900 whitespace-pre">100 / 100</p>
+            <p class="mt-0.5 text-[0.7rem] text-ink-800 italic leading-snug">call me superman</p>
+            <span class="stat-tip" role="tooltip">
+              <strong class="font-heavy uppercase tracking-wider text-pow-600">Strength!</strong>
+              Fixed stat. Ten years of martial arts got this here; it's probably parked at 100 for the foreseeable future.
+            </span>
+          </div>
+
+          <!-- INT -->
+          <div
+            class="stat-card relative border-3 border-ink-900 bg-paper p-3 shadow-comic-sm"
+            style="transform: rotate(0.4deg);"
+            data-stat="int"
+            tabindex="0"
+          >
+            <div class="flex items-baseline justify-between gap-2">
+              <span class="font-display text-2xl leading-none text-ink-900">INT</span>
+              <span class="font-ui text-[0.65rem] text-ink-700 tracking-widest">Intellect</span>
+            </div>
+            <!-- value is rewritten on an interval by the script below -->
+            <p class="mt-1 font-mono text-sm text-ink-900 whitespace-pre" data-stat-value>?? / 100</p>
+            <p class="mt-0.5 text-[0.7rem] text-ink-800 italic leading-snug">erm...</p>
+            <span class="stat-tip" role="tooltip">
+              <strong class="font-heavy uppercase tracking-wider text-pow-600">Intellect?!</strong>
+              Permanently scrambled, glitches every 100ms and never reveals a real number. Some stats just aren't meant to be measured.
+            </span>
+          </div>
+
+          <!-- DEX -->
+          <div
+            class="stat-card relative border-3 border-ink-900 bg-paper p-3 shadow-comic-sm"
+            style="transform: rotate(-0.4deg);"
+            tabindex="0"
+          >
+            <div class="flex items-baseline justify-between gap-2">
+              <span class="font-display text-2xl leading-none text-ink-900">DEX</span>
+              <span class="font-ui text-[0.65rem] text-ink-700 tracking-widest">Dexterity</span>
+            </div>
+            <p class="mt-1 font-mono text-sm text-ink-900 whitespace-pre">200 / 100</p>
+            <p class="mt-0.5 text-[0.7rem] text-ink-800 italic leading-snug">My degree is typing</p>
+            <span class="stat-tip" role="tooltip">
+              <strong class="font-heavy uppercase tracking-wider text-pow-600">Dexterity!</strong>
+              Fixed stat. Cambridge CS is 70% typing and 30% panicking at the keyboard, so this one's staying pegged above the cap.
+            </span>
+          </div>
+
+          <!-- LCK -->
+          <div
+            class="stat-card relative border-3 border-ink-900 bg-paper p-3 shadow-comic-sm"
+            style="transform: rotate(0.4deg);"
+            tabindex="0"
+          >
+            <div class="flex items-baseline justify-between gap-2">
+              <span class="font-display text-2xl leading-none text-ink-900">LCK</span>
+              <span class="font-ui text-[0.65rem] text-ink-700 tracking-widest">Luck</span>
+            </div>
+            <p class="mt-1 font-mono text-sm text-ink-900 whitespace-pre">04 / 100</p>
+            <p class="mt-0.5 text-[0.7rem] text-ink-800 italic leading-snug">i keep tripping over nothing</p>
+            <span class="stat-tip" role="tooltip">
+              <strong class="font-heavy uppercase tracking-wider text-pow-600">Luck.</strong>
+              Fixed stat. The universe decided. I've tripped on flat ground enough times that this number isn't moving.
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── LORE (the bio section, as a player's-handbook scroll) ───────── -->
+  <section class="container-wide py-10">
+    <div class="grid md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-6">
+      <div class="panel">
+        <span class="eyebrow">Lore</span>
+        <h3 class="font-display text-3xl md:text-4xl leading-tight mb-4 text-ink-900">
+          Backstory
+        </h3>
+        <div class="space-y-4 text-ink-800 leading-relaxed">
+          <p>
+            Grew up doing too much math, discovered you could make the
+            computer do the math for you, then discovered computers were fun
+            to play with on their own, and have been oscillating between the
+            three ever since. Now in the first year of a CS degree at
+            <span class="font-heavy">Churchill College, Cambridge</span>,
+            and still haven't picked a side. Probably won't.
+          </p>
+          <p>
+            Currently interested in <span class="font-heavy">formal languages and methods</span>.
+            The corner of CS where "does it work?" gets replaced with "can you
+            prove it?". Long term interests: quantum information, theoretical
+            CS, and mathematics education.
+          </p>
+          <p>
+            Some projects I've worked on out of school include a
+            <a href="/portfolio" class="font-heavy underline decoration-pow-500 decoration-2 underline-offset-2 hover:decoration-4">GLSL shader</a>
+            that ray-traces a Lorentz boost (went to the Cambridge Graphics
+            Competition and got a respectable 4th), an
+            <a href="/portfolio" class="font-heavy underline decoration-pow-500 decoration-2 underline-offset-2 hover:decoration-4">evolutionary ecosystem</a>
+            of 300 neural-net critters either sharing food or stealing it,
+            and <a href="/research/elliptic-functions" class="font-heavy underline decoration-pow-500 decoration-2 underline-offset-2 hover:decoration-4">paper on elliptic functions</a>
+            that grew 20 pages longer than I meant it to.
+          </p>
+          <p>
+            Off-screen: <a href="/martial-arts" class="font-heavy underline decoration-pow-500 decoration-2 underline-offset-2 hover:decoration-4">ten years of martial arts</a>
+            (Tang Soo Do through high school, now Shotokan Karate at
+            Cambridge), pool, and whatever book is open on the desk. Also
+            serving as the undergraduate academic rep on Cambridge's CS
+            Faculty Board, which is a polite way of saying "I forward your
+            complaints upstream."
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-5">
+        <!-- Quests card, yellow, jaunty rotation -->
+        <div class="panel panel-yellow" style="transform: rotate(1.2deg);">
+          <span class="eyebrow">Quests</span>
+          <ul class="mt-2 space-y-2 text-ink-900">
+            <li class="flex gap-2">
+              <span class="font-heavy">▸</span>
+              <span>Surviving Part IA of the Cambridge CS Tripos (2025 to 2028).</span>
+            </li>
+            <li class="flex gap-2 items-start">
+              <!-- Big comic tick, red on yellow, rotated -->
+              <span
+                class="inline-block bg-pow-500 text-paper font-display text-sm leading-none px-1.5 py-0.5 border-2 border-ink-900 mt-0.5"
+                style="transform: rotate(-8deg);"
+                aria-hidden="true"
+              >✔</span>
+              <span>Ranked 3rd [1st class] in the January progress exams.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="font-heavy">▸</span>
+              <span>Getting my <a href="/research/elliptic-functions" class="font-heavy underline decoration-pow-500 decoration-2 underline-offset-2 hover:decoration-4">elliptic functions paper</a> on arXiv.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Location panel, separate from Quests now -->
+        <div class="panel bg-paper" style="transform: rotate(-0.9deg);">
+          <span class="eyebrow">Location</span>
+          <p class="text-ink-900 font-heavy text-base leading-snug mt-1">
+            {config.location}
+          </p>
+          <p class="mt-2 text-ink-800 text-sm leading-relaxed">
+            Term-time at Churchill, otherwise home in Texas.
+          </p>
+        </div>
+
+        <!-- Passport card, work authorisation. Black text on pale red panel. -->
+        <div class="panel panel-red" style="transform: rotate(-0.4deg);">
+          <span class="eyebrow">Passport</span>
+          <p class="text-ink-900 text-sm leading-relaxed mt-1 mb-3">
+            Authorised to work in three regions. No sponsorship required for
+            any of them. (Saves a paperwork side-quest.)
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="inline-block bg-paper text-ink-900 font-heavy uppercase text-xs tracking-wider px-2 py-1 border-3 border-ink-900">🇺🇸 USA</span>
+            <span class="inline-block bg-paper text-ink-900 font-heavy uppercase text-xs tracking-wider px-2 py-1 border-3 border-ink-900">🇬🇧 UK</span>
+            <span class="inline-block bg-paper text-ink-900 font-heavy uppercase text-xs tracking-wider px-2 py-1 border-3 border-ink-900">🇮🇳 India</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── INVENTORY (tools, framed as game items) ─────────────────────── -->
+  <section class="container-wide py-10">
+    <div class="mb-4 flex items-end justify-between flex-wrap gap-3">
+      <div>
+        <span class="eyebrow">Inventory</span>
+        <h3 class="font-display text-3xl md:text-4xl leading-tight text-ink-900">Carried items</h3>
+      </div>
+      <span class="font-ui text-xs text-ink-700 tracking-[0.2em]">SLOTS · 06 / 06</span>
+    </div>
+
+    <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      {inventory.map((item, i) => (
+        <li
+          class={`border-3 border-ink-900 shadow-comic-sm p-3 ${rarityClass(item.rarity)}`}
+          style={`transform: rotate(${(i % 2 === 0 ? -1 : 1) * (0.4 + (i % 3) * 0.2)}deg);`}
+        >
+          <p class="font-ui text-[0.55rem] tracking-[0.3em] opacity-70 mb-0.5">
+            {item.rarity.toUpperCase()}
+          </p>
+          <p class="font-display text-lg leading-tight">{item.name}</p>
+          <p class="font-heavy uppercase text-[0.65rem] tracking-wider mt-1 opacity-80">
+            {item.slot}
+          </p>
+        </li>
+      ))}
+    </ul>
+    <p class="mt-3 font-ui text-[0.7rem] text-ink-700 tracking-widest">
+      TIP · RARITY DOES NOT CORRELATE WITH JOB MARKET DEMAND. PROBABLY.
+    </p>
+  </section>
+
+  <!-- ── PARTY CTA ────────────────────────────────────────────────────── -->
+  <section class="container-wide py-10">
+    <div class="panel bg-ink-900 text-paper relative overflow-hidden" style="transform: rotate(-0.4deg);">
+      <span class="eyebrow" style="color: #ffd21f;">Join the party?</span>
+      <h3 class="font-display text-3xl md:text-4xl leading-tight mb-4 text-paper">
+        Two party slots open. Bring snacks.
+      </h3>
+      <div class="flex flex-wrap gap-3">
+        <a href="/portfolio" class="btn-primary">See the loot</a>
+        <a href="/research" class="btn bg-zap-400 text-ink-900">Read the scrolls</a>
+        <a href={config.links.linkedin} target="_blank" rel="noopener noreferrer" class="btn-ghost bg-paper">
+          LinkedIn
+        </a>
+      </div>
+      <!-- Decorative corner burst -->
+      <span
+        class="burst absolute -top-3 -right-3 text-xs md:text-sm"
+        style="transform: rotate(14deg);"
+      >NEW<br>GAME+</span>
+    </div>
+  </section>
+
+  <!--
+    Dynamic stats script. Runs on load and at 60s intervals.
+    - HP drains 100 -> 50 from ~08:00 to ~22:00 London, then regens overnight.
+    - MP tops up to 100 at each meal (07:00, 13:00, 18:00 London) and decays
+      linearly to ~20 by the next meal.
+    - INT glitches every ~600ms with a garbled value, then briefly shows 82.
+    Times computed in Europe/London via Intl.DateTimeFormat, so it's correct
+    regardless of the visitor's local timezone.
+  -->
+  <script is:inline>
+    (function () {
+      function londonNowMinutes() {
+        var fmt = new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'Europe/London',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        });
+        var parts = fmt.formatToParts(new Date());
+        var h = 0, m = 0;
+        for (var i = 0; i < parts.length; i++) {
+          if (parts[i].type === 'hour') h = parseInt(parts[i].value, 10);
+          if (parts[i].type === 'minute') m = parseInt(parts[i].value, 10);
+        }
+        // Some browsers render hour='24' at midnight; clamp to 0.
+        if (h === 24) h = 0;
+        return h * 60 + m;
+      }
+
+      function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+      function computeHP(mins) {
+        // Day window: 08:00 (480) -> 22:00 (1320). Drain 100 -> 50.
+        // Overnight: 22:00 -> 08:00 next day. Regen 50 -> 100.
+        if (mins >= 480 && mins < 1320) {
+          var frac = (mins - 480) / (1320 - 480); // 0..1
+          return Math.round(100 - frac * 50);
+        }
+        var sinceNight;
+        if (mins >= 1320) sinceNight = mins - 1320;
+        else              sinceNight = mins + (1440 - 1320); // 0..480 morning -> add 120 evening
+        var night = sinceNight / (1440 - 1320 + 480); // 0..1 across 10h
+        return Math.round(50 + night * 50);
+      }
+
+      function hpLabel(mins) {
+        // Morning 05:00-12:00, Afternoon 12:00-17:00, Evening 17:00-21:00, Night otherwise
+        if (mins >= 5 * 60  && mins < 12 * 60) return 'woke up and probably in class';
+        if (mins >= 12 * 60 && mins < 17 * 60) return 'likely going to supervisions';
+        if (mins >= 17 * 60 && mins < 21 * 60) return 'probably doing supervision work';
+        return 'regenerating for the next day';
+      }
+
+      function computeMP(mins) {
+        // Meals at 07:00, 13:00, 18:00 London.
+        var meals = [7 * 60, 13 * 60, 18 * 60];
+        var lastMeal, nextMeal;
+        if (mins < meals[0]) {
+          // Before today's first meal: last was yesterday's 18:00.
+          lastMeal = meals[2] - 1440;
+          nextMeal = meals[0];
+        } else if (mins < meals[1]) {
+          lastMeal = meals[0]; nextMeal = meals[1];
+        } else if (mins < meals[2]) {
+          lastMeal = meals[1]; nextMeal = meals[2];
+        } else {
+          lastMeal = meals[2]; nextMeal = meals[0] + 1440;
+        }
+        var gap = nextMeal - lastMeal;
+        var sinceMeal = mins - lastMeal;
+        // MP stays 100 briefly post-meal, decays to ~20 before next meal.
+        var mp = 100 - (sinceMeal / gap) * 80;
+        return Math.max(20, Math.min(100, Math.round(mp)));
+      }
+
+      function mpLabel(mp) {
+        if (mp >= 90) return 'just ate, running hot';
+        if (mp >= 60) return 'cruising between meals';
+        if (mp >= 35) return 'could go for a snack';
+        return 'feed me!';
+      }
+
+      function formatBar(v, max) {
+        // Pad both to 3 chars so " 82 / 100" aligns monospaced.
+        var a = pad2(v); if (v >= 100) a = '' + v;
+        var b = max >= 100 ? '' + max : pad2(max);
+        return a + ' / ' + b;
+      }
+
+      function updateStats() {
+        var mins = londonNowMinutes();
+
+        // HP
+        var hp = computeHP(mins);
+        var hpCard = document.querySelector('[data-stat="hp"]');
+        if (hpCard) {
+          var v = hpCard.querySelector('[data-stat-value]');
+          var n = hpCard.querySelector('[data-stat-note]');
+          if (v) v.textContent = formatBar(hp, 100);
+          if (n) n.textContent = hpLabel(mins);
+        }
+
+        // MP
+        var mp = computeMP(mins);
+        var mpCard = document.querySelector('[data-stat="mp"]');
+        if (mpCard) {
+          var mv = mpCard.querySelector('[data-stat-value]');
+          var mn = mpCard.querySelector('[data-stat-note]');
+          if (mv) mv.textContent = formatBar(mp, 100);
+          if (mn) mn.textContent = mpLabel(mp);
+        }
+      }
+
+      // INT glitch, runs on a fast interval. Never reveals a real value,
+      // INT is permanently scrambled. (Reduced-motion users get a static
+      // glitch-styled string so the card doesn't go blank or flicker.)
+      var GLITCH_CHARS = '?!@#%&*§<>/\\|';
+      function glitchValue() {
+        var s = '';
+        for (var i = 0; i < 8; i++) {
+          s += GLITCH_CHARS.charAt((Math.random() * GLITCH_CHARS.length) | 0);
+        }
+        // format to look like "XXX / XXX" with the right spacing
+        return s.slice(0, 3) + ' / ' + s.slice(3, 6);
+      }
+      function updateInt() {
+        var intCard = document.querySelector('[data-stat="int"]');
+        if (!intCard) return;
+        var v = intCard.querySelector('[data-stat-value]');
+        if (!v) return;
+        v.textContent = glitchValue();
+      }
+
+      function start() {
+        updateStats();
+        updateInt();
+        // HP/MP update each minute; INT glitches every ~200ms.
+        var slow = setInterval(updateStats, 60000);
+        var fast = setInterval(updateInt, 200);
+
+        // If user prefers reduced motion, freeze the glitch on a single
+        // garbled frame instead of letting it strobe.
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          clearInterval(fast);
+          var intCard = document.querySelector('[data-stat="int"]');
+          if (intCard) {
+            var v = intCard.querySelector('[data-stat-value]');
+            if (v) v.textContent = '??? / ???';
+          }
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start);
+      } else {
+        start();
+      }
+    })();
+  </script>
+</BaseLayout>

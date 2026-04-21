@@ -1,0 +1,32 @@
+---
+/**
+ * PageHeader, comic version.
+ * Big Bangers title, pow-red eyebrow stamp, dark lead prose on paper.
+ * Replaces the old ink-300 lead (unreadable on cream background).
+ */
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+}
+const { eyebrow, title, lead } = Astro.props;
+---
+
+<header class="container-wide pt-14 pb-8 mb-8 relative">
+  <!-- Jagged divider under the header, low opacity, sits at the bottom -->
+  <div class="absolute left-6 right-6 bottom-0 divider-jagged" aria-hidden="true"></div>
+
+  {eyebrow && (
+    <span class="eyebrow anim-in">:: {eyebrow} ::</span>
+  )}
+  <h1 class="font-display text-5xl md:text-7xl leading-[0.9] text-ink-900 anim-in anim-stagger-1">
+    {title}
+  </h1>
+  {
+    lead && (
+      <p class="mt-5 max-w-2xl text-ink-800 text-lg leading-relaxed anim-in anim-stagger-2">
+        {lead}
+      </p>
+    )
+  }
+</header>

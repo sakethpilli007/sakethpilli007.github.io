@@ -1,0 +1,93 @@
+---
+/**
+ * Portfolio, INVENTORY page.
+ *
+ * Concept: you've opened the inventory screen. The top row is "equipped"
+ * (featured projects), below is the "stash" (everything else). Every project
+ * becomes an item tile with a rarity border, pitch as flavour text, and
+ * code/live links as item actions.
+ *
+ * Project data still comes from ProjectCard, but this page wraps it with an
+ * equipped/stash split and inventory HUD so the metaphor reads.
+ */
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import ProjectCard from '~/components/ProjectCard.astro';
+import { projects } from '~/config';
+
+const sorted = [...projects].sort((a, b) => a.order - b.order);
+const equipped = sorted.filter((p) => p.featured);
+const stash    = sorted.filter((p) => !p.featured);
+---
+
+<BaseLayout
+  title="Portfolio"
+  description="Technical projects by PR Saketh, shaders, evolutionary NNs, games, Chrome extensions, and more."
+>
+  <!-- ── INVENTORY BANNER ─────────────────────────────────────────────── -->
+  <section class="container-wide pt-12 pb-4">
+    <div class="flex items-end justify-between flex-wrap gap-3 mb-2">
+      <div>
+        <span class="eyebrow">Inventory · PROJECTS</span>
+        <h1 class="font-display text-5xl md:text-7xl leading-[0.9] text-ink-900">Loot bag</h1>
+      </div>
+      <div class="flex flex-col items-end text-right">
+        <span class="font-ui text-xs text-ink-700 tracking-[0.25em]">
+          SLOTS · {String(sorted.length).padStart(2, '0')} / {String(sorted.length).padStart(2, '0')}
+        </span>
+      </div>
+    </div>
+
+    <p class="text-ink-800 leading-relaxed max-w-2xl">
+      Everything I've built recently. Featured items are equipped up top, the
+      rest are in the stash. Every tile is on GitHub, click through for code,
+      readmes, and, where available, a live demo you can poke at.
+    </p>
+
+    <!-- Jagged divider under the banner -->
+    <div class="divider-jagged mt-6"></div>
+  </section>
+
+  <!-- ── EQUIPPED (featured) ──────────────────────────────────────────── -->
+  {equipped.length > 0 && (
+    <section class="container-wide pb-8">
+      <div class="flex items-center gap-3 mb-10">
+        <span
+          class="inline-flex items-center gap-2 bg-ink-900 text-zap-400 font-display text-lg px-3 py-1 border-3 border-ink-900 shadow-comic-sm tracking-wider"
+          style="transform: rotate(2deg);"
+        >
+          <span aria-hidden="true" class="text-pow-500">◆</span>EQUIPPED
+        </span>
+        <span class="font-ui text-[0.7rem] text-ink-700 tracking-[0.25em]">
+          ACTIVE LOADOUT · {equipped.length} SLOT{equipped.length === 1 ? '' : 'S'}
+        </span>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {equipped.map((p, i) => <ProjectCard project={p} index={(i % 6) + 1} />)}
+      </div>
+    </section>
+  )}
+
+  <!-- ── STASH (everything else) ──────────────────────────────────────── -->
+  {stash.length > 0 && (
+    <section class="container-wide pb-24">
+      <div class="flex items-center gap-3 mb-4 mt-6">
+        <span
+          class="inline-block bg-ink-900 text-paper font-display text-lg px-3 py-1 border-3 border-ink-900 shadow-comic-sm"
+          style="transform: rotate(1.5deg);"
+        >
+          🎒 STASH
+        </span>
+        <span class="font-ui text-[0.7rem] text-ink-700 tracking-[0.25em]">
+          STORAGE · {stash.length} ITEM{stash.length === 1 ? '' : 'S'}
+        </span>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {stash.map((p, i) => <ProjectCard project={p} index={(i % 6) + 1} />)}
+      </div>
+
+      <p class="mt-8 font-ui text-[0.7rem] text-ink-700 tracking-[0.25em]">
+        TIP · CODE IS WORTH MORE THAN ITS WEIGHT IN XP.
+      </p>
+    </section>
+  )}
+</BaseLayout>

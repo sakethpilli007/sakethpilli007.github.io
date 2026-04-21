@@ -1,0 +1,21 @@
+---
+/**
+ * Legacy redirect. The viral-illness model moved from /research/ to the
+ * portfolio (it's a code project, not a research paper). We keep this route
+ * as a thin redirect so any external link that still points here lands on
+ * the right page instead of 404ing.
+ */
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content="0; url=/portfolio" />
+    <link rel="canonical" href="/portfolio" />
+    <title>Redirecting…</title>
+  </head>
+  <body>
+    <p>Redirecting to <a href="/portfolio">/portfolio</a>…</p>
+    <script>window.location.replace('/portfolio');</script>
+  </body>
+</html>

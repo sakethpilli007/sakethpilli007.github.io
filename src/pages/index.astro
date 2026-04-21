@@ -1,0 +1,286 @@
+---
+/**
+ * Home, ARCADE BOOT SCREEN.
+ *
+ * Layout concept: you've just dropped a coin into a comic-styled arcade
+ * cabinet. The title blinks, the cabinet has scanlines, and the "menu" is
+ * a set of chunky arcade buttons that each take you into a different area
+ * of the site ("select your mode"). Below, a "HIGH SCORES" board shows the
+ * featured projects, and a small "NOW LOADING" ticker previews research.
+ *
+ * Data is unchanged, pulled from config.ts as before.
+ */
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { config, projects, papers } from '~/config';
+
+const featured = projects.filter((p) => p.featured).slice(0, 3);
+const latestPaper = papers[0];
+
+// Arcade mode-select targets. Order mirrors `config.nav` but re-labeled for
+// the cabinet metaphor. Each gets a color.
+const modes = [
+  { label: 'NEW GAME',    sub: 'Portfolio',       href: '/portfolio',       color: 'bg-pow-500 text-paper' },
+  { label: 'CHARACTER',   sub: 'About',           href: '/about',           color: 'bg-zap-400 text-ink-900' },
+  { label: 'SKILL TREE',  sub: 'Research',        href: '/research',        color: 'bg-paper text-ink-900' },
+  { label: 'ACHIEVEMENTS',sub: 'Beyond the code', href: '/beyond-the-code', color: 'bg-zap-400 text-ink-900' },
+  { label: 'VS MODE',     sub: 'Martial Arts',    href: '/martial-arts',    color: 'bg-pow-500 text-paper' },
+  { label: 'PAUSE MENU',  sub: 'Resume',          href: '/resume',          color: 'bg-paper text-ink-900' },
+];
+---
+
+<BaseLayout title={config.name.formal} description={config.tagline}>
+  <!-- ── MARQUEE RIBBON (infinite scroll of status text) ─────────────── -->
+  <div
+    class="border-b-3 border-ink-900 bg-ink-900 text-zap-400 overflow-hidden"
+    aria-hidden="true"
+  >
+    <div class="flex whitespace-nowrap font-ui text-xs tracking-[0.2em] py-2 animate-marquee">
+      <span class="px-6">★ BREAKING NEWS!</span>
+      <span class="px-6">★ SUPERMAN DISCOVERED TO EAT CHIPS EVERY FRIDAY</span>
+      <span class="px-6">★ POTATO COMPANY STOCKS INCREASE BY 300%</span>
+      <span class="px-6">★ THE FAMOUS SAKETH FINALLY DISCOVERS GRASS</span>
+      <span class="px-6">★ LOCAL CAT SIGHTED DOING CALCULUS, REFUSES INTERVIEW</span>
+      <span class="px-6">★ SHADERS DECLARED 'KINDA OK' BY INDEPENDENT GPU</span>
+      <span class="px-6">★ 300 NEURAL CRITTERS STAGE UNION WALKOUT</span>
+      <span class="px-6">★ CAMBRIDGE STUDENT ATTEMPTS PROOF, BLAMES LINE 42</span>
+      <!-- duplicated so marquee can wrap seamlessly at -50% translate -->
+      <span class="px-6">★ BREAKING NEWS!</span>
+      <span class="px-6">★ SUPERMAN DISCOVERED TO EAT CHIPS EVERY FRIDAY</span>
+      <span class="px-6">★ POTATO COMPANY STOCKS INCREASE BY 300%</span>
+      <span class="px-6">★ THE FAMOUS SAKETH FINALLY DISCOVERS GRASS</span>
+      <span class="px-6">★ LOCAL CAT SIGHTED DOING CALCULUS, REFUSES INTERVIEW</span>
+      <span class="px-6">★ SHADERS DECLARED 'KINDA OK' BY INDEPENDENT GPU</span>
+      <span class="px-6">★ 300 NEURAL CRITTERS STAGE UNION WALKOUT</span>
+      <span class="px-6">★ CAMBRIDGE STUDENT ATTEMPTS PROOF, BLAMES LINE 42</span>
+    </div>
+  </div>
+
+  <!-- ── CABINET / TITLE PANEL ────────────────────────────────────────── -->
+  <section class="container-wide pt-12 pb-6">
+    <!-- The cabinet: black ink frame, scanlines overlay inside, big title. -->
+    <div
+      class="scanlines relative bg-ink-900 text-paper border-3 border-ink-900 p-8 md:p-14 shadow-comic-lg"
+    >
+      <!-- Little "1 PLAYER" flag in the corner, not rotated like nothing. -->
+      <span
+        class="absolute -top-5 left-8 inline-block px-3 py-1 bg-pow-500 text-paper font-ui text-xs tracking-[0.2em] border-3 border-ink-900 shadow-comic-sm"
+        style="transform: rotate(-3deg);"
+      >
+        1P READY
+      </span>
+
+      <!-- Comic POW sticker top-right, decorative -->
+      <span
+        class="burst absolute -top-6 right-4 md:right-10 text-xs md:text-sm"
+        style="transform: rotate(12deg);"
+      >HI<br>SCORE</span>
+
+      <p class="font-ui text-zap-400 tracking-[0.3em] text-xs md:text-sm mb-4">
+        :: PR SAKETH :: ARCADE EDITION ::
+      </p>
+
+      <!--
+        Two-column layout on md+: title & copy on the left, player portrait
+        on the right framed as a pixel-edged "character card". Collapses to
+        a single column on small screens so the portrait sits under the title.
+      -->
+      <div class="grid md:grid-cols-[minmax(0,1fr)_auto] gap-8 md:gap-10 items-center">
+        <div class="min-w-0">
+          <h1 class="font-display leading-[0.9] text-paper text-[clamp(3rem,12vw,8rem)] anim-in">
+            PRESS<br/>
+            <span class="text-zap-400">START</span><span class="animate-blink">_</span>
+          </h1>
+
+          <p class="mt-6 max-w-2xl font-sans text-lg md:text-xl leading-snug text-paper/90 anim-in anim-stagger-1">
+            First-year CS at Churchill College, Cambridge. Most days you'll
+            find me <span class="text-zap-400 font-heavy">writing</span>,
+            <span class="text-pow-400 font-heavy">typing</span>, or
+            <span class="text-paper font-heavy">reading</span>.
+            Though, I guess that's what a college kid does.
+          </p>
+
+          <!-- CTA arcade buttons -->
+          <div class="mt-10 flex flex-wrap gap-4 items-center anim-in anim-stagger-2">
+            <a href="/portfolio" class="btn-arcade text-base md:text-lg">
+              ▶ PRESS START
+            </a>
+            <a href="/about" class="btn bg-zap-400 text-ink-900 text-base">
+              SELECT PLAYER
+            </a>
+          </div>
+        </div>
+
+        <!--
+          Player portrait. Framed as a bordered paper panel with a little
+          "1P" tag so it reads like a character-select portrait inside the
+          cabinet rather than a stock headshot. `justify-self-center` on
+          small screens keeps it centred when it drops below the copy.
+        -->
+        <div
+          class="relative justify-self-center md:justify-self-end shrink-0 anim-in anim-stagger-2"
+          style="transform: rotate(2deg);"
+        >
+          <div class="relative bg-paper border-3 border-ink-900 p-2 shadow-comic">
+            <img
+              src="/assets/images/saketh.jpg"
+              alt={`${config.name.formal} portrait`}
+              width="320"
+              height="320"
+              loading="eager"
+              decoding="async"
+              class="block w-[180px] h-[180px] md:w-[220px] md:h-[220px] object-cover border-3 border-ink-900"
+            />
+            <p class="mt-2 font-display text-ink-900 text-center text-lg leading-none tracking-wide">
+              PLAYER 1
+            </p>
+          </div>
+          <span
+            class="absolute -top-3 -left-3 inline-block bg-pow-500 text-paper font-display text-sm px-2 py-0.5 border-3 border-ink-900 shadow-comic-sm"
+            style="transform: rotate(-10deg);"
+            aria-hidden="true"
+          >1P</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── MODE SELECT ──────────────────────────────────────────────────── -->
+  <section class="container-wide py-10">
+    <div class="mb-6 flex items-end justify-between flex-wrap gap-3">
+      <div>
+        <span class="eyebrow">Main menu</span>
+        <h2 class="font-display text-4xl md:text-5xl">Select mode</h2>
+      </div>
+      <span class="font-ui text-xs text-ink-700 tracking-[0.2em]">&lt;MENU · 01&gt;</span>
+    </div>
+
+    <ul class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {modes.map((m, i) => (
+        <li class="anim-in" style={`animation-delay: ${0.05 + i * 0.07}s`}>
+          <a
+            href={m.href}
+            class={`group block border-3 border-ink-900 shadow-comic p-5 ${m.color}`}
+            style={`transform: rotate(${(i % 2 === 0 ? -1 : 1) * (0.3 + (i % 3) * 0.25)}deg);`}
+          >
+            <div class="flex items-center justify-between gap-3 mb-1">
+              <span class="font-display text-3xl md:text-4xl tracking-wide leading-none">
+                {m.label}
+              </span>
+              <span class="font-ui text-xs tracking-widest opacity-70">{String(i + 1).padStart(2, '0')}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="font-heavy uppercase text-sm tracking-wider">{m.sub}</span>
+              <span
+                class="inline-block group-hover:translate-x-1 transition-transform font-display text-2xl leading-none"
+                aria-hidden="true"
+              >▶</span>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <!-- ── HIGH SCORES (featured projects) ───────────────────────────────── -->
+  <section class="container-wide py-10">
+    <div class="mb-6 flex items-end justify-between flex-wrap gap-3">
+      <div>
+        <span class="eyebrow">Hall of fame</span>
+        <h2 class="font-display text-4xl md:text-5xl">High scores</h2>
+      </div>
+      <a href="/portfolio" class="btn-ghost text-xs">All entries ▶</a>
+    </div>
+
+    <!--
+      Scoreboard layout, a stacked list, each row a numbered player entry.
+      Deliberately NOT a card grid; this riff reinforces the arcade metaphor.
+    -->
+    <ol class="space-y-3">
+      {featured.map((p, i) => (
+        <li class="panel panel-flat flex flex-wrap md:flex-nowrap items-center gap-4 md:gap-6">
+          <span
+            class="font-display text-5xl md:text-6xl text-pow-500 w-16 text-center leading-none"
+            style="text-shadow: 3px 3px 0 #000;"
+          >
+            {String(i + 1).padStart(2, '0')}
+          </span>
+          <div class="flex-1 min-w-0">
+            <p class="font-heavy text-xl md:text-2xl text-ink-900 leading-tight">
+              {p.title}
+            </p>
+            <p class="text-ink-700 text-sm mt-1 line-clamp-2">{p.pitch}</p>
+            <div class="mt-2 flex flex-wrap gap-1.5">
+              {p.tags.slice(0, 3).map((t) => (
+                <span class={`tag tag-${t.kind}`}>{t.text}</span>
+              ))}
+            </div>
+          </div>
+          <div class="flex gap-2 flex-shrink-0 flex-wrap">
+            {p.github && (
+              <a href={p.github} target="_blank" rel="noopener noreferrer" class="btn-ghost text-xs">Code</a>
+            )}
+            {p.paper && (
+              <a href={p.paper.url} target="_blank" rel="noopener noreferrer" class="btn-ghost text-xs">
+                {p.paper.label}
+              </a>
+            )}
+            {p.live && (
+              <a href={p.live.url} target="_blank" rel="noopener noreferrer" class="btn-primary text-xs">
+                {p.live.label}
+              </a>
+            )}
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <!-- ── NOW LOADING (research teaser) + 2P JOIN? (contact) ──────────── -->
+  <section class="container-wide py-10 grid md:grid-cols-2 gap-6">
+    <a href="/research" class="group block">
+      <div class="panel panel-tilt-l h-full">
+        <span class="eyebrow">★ HOT OFF THE PRESS ★</span>
+        <h3 class="font-display text-3xl md:text-4xl leading-tight mb-3 text-ink-900 group-hover:text-pow-600 transition-colors">
+          {latestPaper.title}
+        </h3>
+        <p class="text-ink-800 leading-relaxed line-clamp-4">{latestPaper.abstract}</p>
+        <span class="mt-4 inline-flex items-center gap-2 font-heavy uppercase tracking-wider text-sm text-pow-600">
+          Read the scroll ▶
+        </span>
+      </div>
+    </a>
+
+    <a href="/contact" class="group block">
+      <!-- Quest-giver style speech bubble as the CTA, hint at the Contact page. -->
+      <div class="relative h-full">
+        <div class="panel panel-tilt-r bg-zap-200 h-full">
+          <span class="eyebrow">2P join?</span>
+          <h3 class="font-display text-3xl md:text-4xl leading-tight mb-3">
+            Say hi, traveler.
+          </h3>
+          <p class="text-ink-800 leading-relaxed">
+            Want to collaborate, compare notes, talk about math, theory, or which
+            martial art hurts the most? Slide into my quest log.
+          </p>
+          <span class="mt-4 inline-flex items-center gap-2 font-heavy uppercase tracking-wider text-sm">
+            Open dialogue ▶
+          </span>
+        </div>
+      </div>
+    </a>
+  </section>
+
+  <!-- ── STATUS BAR (degree / school stats as arcade status) ──────────── -->
+  <section class="container-wide py-10">
+    <div class="border-3 border-ink-900 bg-ink-900 text-paper p-5 md:p-6 shadow-comic-yellow grid sm:grid-cols-2 gap-4">
+      {config.stats.map((s) => (
+        <div>
+          <p class="font-ui text-zap-400 text-[0.65rem] tracking-[0.25em] mb-1">
+            ▸ {s.label.toUpperCase()}
+          </p>
+          <p class="font-heavy leading-snug text-paper">{s.detail}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,72 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHeader from '~/components/PageHeader.astro';
+import { papers } from '~/config';
+
+const paper = papers.find((p) => p.slug === 'silicon-crystallography')!;
+---
+
+<BaseLayout title={paper.title} description={paper.abstract}>
+  <PageHeader eyebrow={`Research · ${paper.date}`} title={paper.title} />
+
+  <section class="container-prose pb-24">
+    <div class="card anim-in anim-stagger-1 mb-10">
+      <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <div>
+          <span class="eyebrow mb-1">Team</span>
+          <p class="text-ink-800">{paper.authors}</p>
+        </div>
+        <div>
+          <span class="eyebrow mb-1">Venue</span>
+          <p class="text-ink-800">{paper.venue}</p>
+        </div>
+        <div>
+          <span class="eyebrow mb-1">Topics</span>
+          <div class="flex flex-wrap gap-1.5 mt-1">
+            {paper.tags.map((t) => <span class="tag-domain">{t}</span>)}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <article class="anim-in anim-stagger-2 space-y-5 text-ink-800 leading-relaxed">
+      <h2 class="text-2xl font-semibold mb-1">Abstract</h2>
+      <p>{paper.abstract}</p>
+
+      <h2 class="text-2xl font-semibold pt-6">Methods</h2>
+      <ul class="space-y-1 text-ink-800">
+        <li>· Plane-wave DFT with Quantum ESPRESSO pseudopotentials</li>
+        <li>· Unit-cell construction for Si(100), Si(110), Si(111) surfaces</li>
+        <li>· Relaxation to minimum-energy configurations</li>
+        <li>· Visualization via XCrysDen and 3D printing with Prusa Slicer</li>
+        <li>· Comparison against lab profilometry traces</li>
+      </ul>
+
+      <h2 class="text-2xl font-semibold pt-6">My role</h2>
+      <p>
+        I led a team of four researchers at ASDRP. Responsibilities included
+        Hamiltonian setup, running and debugging Quantum ESPRESSO jobs,
+        writing up results, and coordinating the lab-comparison workflow.
+      </p>
+
+      <div class="card mt-10 border-amber-800/60">
+        <span class="eyebrow text-pow-600">IP protected</span>
+        <p class="text-ink-800 text-sm leading-relaxed">
+          The full report and underlying data are subject to intellectual-property
+          restrictions from the sponsoring program and are not publicly
+          distributable. Methods, system setup, and headline findings are
+          summarized above; specific numerical results, unit-cell parameters,
+          and profilometry traces remain under IP protection. For academic or
+          collaborative discussion, please reach out directly.
+        </p>
+      </div>
+    </article>
+
+    <div class="mt-10">
+      <a href="/research" class="link-underline text-pow-600 text-sm inline-flex items-center gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to all research
+      </a>
+    </div>
+  </section>
+</BaseLayout>

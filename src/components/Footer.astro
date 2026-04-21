@@ -1,0 +1,45 @@
+---
+import { config } from '~/config';
+const year = new Date().getFullYear();
+---
+
+<!--
+  Footer styled as a closing comic panel, single bordered strip with a
+  "THE END!" style stamp on the left and social links on the right.
+-->
+<footer class="mt-24 border-t-3 border-ink-900 bg-paper">
+  <div
+    class="container-wide grid md:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-6 py-8"
+  >
+    <div
+      class="inline-block font-display text-2xl bg-pow-500 text-paper px-4 py-1 border-3 border-ink-900 shadow-comic-sm"
+      style="transform: rotate(-3deg);"
+    >
+      THE END · FOR NOW
+    </div>
+    <p class="text-center md:text-left font-sans text-sm text-ink-700">
+      © {year} {config.name.formal}
+    </p>
+    <div class="flex items-center gap-3 md:justify-end">
+      <a
+        href={config.links.github}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="font-heavy uppercase tracking-widest text-xs border-3 border-ink-900 bg-paper px-2 py-1 shadow-comic-sm"
+        style="transform: rotate(-1deg);"
+      >GitHub</a>
+      <a
+        href={config.links.linkedin}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="font-heavy uppercase tracking-widest text-xs border-3 border-ink-900 bg-zap-400 px-2 py-1 shadow-comic-sm"
+        style="transform: rotate(1deg);"
+      >LinkedIn</a>
+      <a
+        href="/contact"
+        class="font-heavy uppercase tracking-widest text-xs border-3 border-ink-900 bg-pow-500 text-paper px-2 py-1 shadow-comic-sm"
+        style="transform: rotate(-0.5deg);"
+      >Contact</a>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,64 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHeader from '~/components/PageHeader.astro';
+import { papers } from '~/config';
+
+const paper = papers.find((p) => p.slug === 'gravitational-waves')!;
+---
+
+<BaseLayout title={paper.title} description={paper.abstract}>
+  <PageHeader eyebrow={`Research · ${paper.date}`} title={paper.title} />
+
+  <section class="container-prose pb-24">
+    <!-- Metadata -->
+    <div class="card anim-in anim-stagger-1 mb-10">
+      <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <div>
+          <span class="eyebrow mb-1">Authors</span>
+          <p class="text-ink-800">{paper.authors}</p>
+        </div>
+        <div>
+          <span class="eyebrow mb-1">Venue</span>
+          <p class="text-ink-800">{paper.venue}</p>
+        </div>
+        <div>
+          <span class="eyebrow mb-1">Topics</span>
+          <div class="flex flex-wrap gap-1.5 mt-1">
+            {paper.tags.map((t) => <span class="tag-domain">{t}</span>)}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Abstract -->
+    <article class="anim-in anim-stagger-2 prose-like space-y-5 text-ink-800 leading-relaxed">
+      <h2 class="text-2xl font-semibold mb-1">Abstract</h2>
+      <p>{paper.abstract}</p>
+
+      <h2 class="text-2xl font-semibold pt-6">Key concepts</h2>
+      <ul class="space-y-1 text-ink-800">
+        <li>· Linearization of the Einstein field equations</li>
+        <li>· Transverse-traceless gauge and the plus/cross polarization basis</li>
+        <li>· Quadrupole luminosity formula</li>
+        <li>· Geodesic-deviation response of a Michelson interferometer</li>
+        <li>· Matched filtering and LIGO signal extraction</li>
+        <li>· Modified gravity in the strong-field regime (Brans–Dicke, f(R), Horndeski)</li>
+      </ul>
+
+      <div class="card mt-10">
+        <span class="eyebrow">Full PDF</span>
+        <p class="text-ink-800 text-sm">
+          The full paper is being polished and will be posted here soon. Ping
+          me on LinkedIn if you'd like an advance copy.
+        </p>
+      </div>
+    </article>
+
+    <div class="mt-10">
+      <a href="/research" class="link-underline text-pow-600 text-sm inline-flex items-center gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to all research
+      </a>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,510 @@
+---
+/**
+ * Contact, QUEST-GIVER DIALOGUE.
+ *
+ * Concept: you've walked up to the NPC who hands out contracts. There's a
+ * portrait / speech-bubble introduction, and the "dialogue choices" are the
+ * form fields themselves. The arithmetic check is reframed as a verification step,
+ * and the submit button is "ACCEPT QUEST". All form logic + Web3Forms wiring
+ * is untouched, only the visual skin and copy changed.
+ */
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { config } from '~/config';
+
+// Web3Forms: single public endpoint + per-form access key.
+// https://docs.web3forms.com/how-to-guide/javascript-ajax-submission
+const FORM_ENDPOINT = 'https://api.web3forms.com/submit';
+const ACCESS_KEY = '96fccd2d-9683-44ba-bcee-ad09120ae046';
+---
+
+<BaseLayout
+  title="Contact"
+  description="Get in touch with PR Saketh via email, LinkedIn, or GitHub."
+>
+  <!-- ── QUEST-GIVER BANNER ───────────────────────────────────────────── -->
+  <section class="container-wide pt-12 pb-4">
+    <div class="grid md:grid-cols-[auto_minmax(0,1fr)] gap-6 items-start">
+      <!-- NPC portrait card -->
+      <div class="relative w-fit mx-auto md:mx-0">
+        <div
+          class="panel panel-flat p-3 bg-paper w-[180px]"
+          style="transform: rotate(-1.4deg);"
+        >
+          <img
+            src="/assets/images/saketh.jpg"
+            alt={`${config.name.formal} portrait`}
+            width="260"
+            height="260"
+            loading="eager"
+            decoding="async"
+            class="block w-[160px] h-[160px] object-cover border-3 border-ink-900"
+          />
+          <p class="mt-2 font-display text-xl text-center leading-none text-ink-900">
+            {config.name.first.toUpperCase()}
+          </p>
+          <p class="mt-1 font-ui text-[0.55rem] text-ink-700 tracking-[0.25em] text-center">
+            QUEST GIVER · NPC
+          </p>
+        </div>
+        <!-- "!" quest marker, floating bob -->
+        <span
+          class="absolute -top-4 -right-3 inline-block bg-zap-400 text-ink-900 font-display text-2xl px-3 py-1 border-3 border-ink-900 shadow-comic-sm bob"
+          aria-hidden="true"
+        >!</span>
+      </div>
+
+      <!-- Speech bubble introducing the quest -->
+      <div class="relative speech-bubble panel bg-paper" style="transform: rotate(-0.3deg);">
+        <span class="eyebrow">Dialogue · 001</span>
+        <h1 class="font-display text-4xl md:text-5xl leading-[0.95] mt-1 mb-3 text-ink-900">
+          "Got a message for me?"
+        </h1>
+        <p class="text-ink-800 leading-relaxed">
+          Drop a line below and I'll reply within a few days. If it's urgent,
+          LinkedIn is the fastest route. GitHub is for code-adjacent things.
+        </p>
+      </div>
+    </div>
+
+    <div class="divider-jagged mt-8"></div>
+  </section>
+
+  <!-- ── DIALOGUE CHOICES (the form) + DIRECT-LINE NPC OPTIONS ───────── -->
+  <section class="container-wide pb-24 grid lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-10 items-start">
+    <!-- Dialogue choices = form -->
+    <div class="anim-in anim-stagger-1">
+      <div
+        class="panel bg-paper"
+        id="contact-card"
+        data-endpoint={FORM_ENDPOINT}
+        data-access-key={ACCESS_KEY}
+        style="transform: rotate(-0.3deg);"
+      >
+        <div class="flex items-baseline justify-between gap-2 mb-1">
+          <span class="eyebrow">Quest board</span>
+          <span class="font-ui text-[0.65rem] tracking-[0.2em] text-ink-700">PRIORITY · MEDIUM</span>
+        </div>
+        <h2 class="font-display text-3xl text-ink-900 leading-none mb-4">Post a contract</h2>
+
+        <form id="contact-form" class="space-y-4" novalidate>
+          <!-- Choice 1: NAME -->
+          <div>
+            <label for="name" class="font-heavy uppercase text-xs tracking-wider text-ink-900 mb-1 flex items-center gap-2">
+              <span class="font-display text-pow-600 text-base leading-none">▸</span>
+              Who approaches?
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              required
+              autocomplete="name"
+              placeholder="Your name"
+              class="w-full bg-paper border-3 border-ink-900 px-3 py-2 text-ink-900 font-mono text-sm focus:outline-none focus:shadow-comic-sm transition-shadow"
+            />
+          </div>
+
+          <!-- Choice 2: EMAIL -->
+          <div>
+            <label for="email" class="font-heavy uppercase text-xs tracking-wider text-ink-900 mb-1 flex items-center gap-2">
+              <span class="font-display text-pow-600 text-base leading-none">▸</span>
+              Raven address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              autocomplete="email"
+              placeholder="you@somewhere.example"
+              class="w-full bg-paper border-3 border-ink-900 px-3 py-2 text-ink-900 font-mono text-sm focus:outline-none focus:shadow-comic-sm transition-shadow"
+            />
+          </div>
+
+          <!-- Choice 3: SUBJECT -->
+          <div>
+            <label for="subject" class="font-heavy uppercase text-xs tracking-wider text-ink-900 mb-1 flex items-center gap-2">
+              <span class="font-display text-pow-600 text-base leading-none">▸</span>
+              Quest title
+              <span class="text-ink-700 font-ui text-[0.65rem] tracking-widest normal-case">(optional)</span>
+            </label>
+            <input
+              id="subject"
+              name="subject"
+              type="text"
+              placeholder="Quick hello"
+              class="w-full bg-paper border-3 border-ink-900 px-3 py-2 text-ink-900 font-mono text-sm focus:outline-none focus:shadow-comic-sm transition-shadow"
+            />
+          </div>
+
+          <!-- Choice 4: MESSAGE -->
+          <div>
+            <label for="message" class="font-heavy uppercase text-xs tracking-wider text-ink-900 mb-1 flex items-center gap-2">
+              <span class="font-display text-pow-600 text-base leading-none">▸</span>
+              The ask
+            </label>
+            <textarea
+              id="message"
+              name="message"
+              rows="6"
+              required
+              placeholder="What's the contract?"
+              class="w-full bg-paper border-3 border-ink-900 px-3 py-2 text-ink-900 font-mono text-sm focus:outline-none focus:shadow-comic-sm transition-shadow resize-y"
+            ></textarea>
+          </div>
+
+          <!-- Honeypot: Web3Forms silently drops submissions where `botcheck` is filled. -->
+          <div class="absolute -left-[9999px]" aria-hidden="true">
+            <label>Leave this field empty
+              <input id="botcheck" name="botcheck" type="checkbox" tabindex="-1" autocomplete="off" />
+            </label>
+          </div>
+
+          <!-- Guild-gate puzzle (was "Human check") -->
+          <div
+            id="puzzle-box"
+            class="border-3 border-ink-900 bg-zap-200 px-3 py-3 flex items-center flex-wrap gap-3 shadow-comic-sm"
+            style="transform: rotate(-0.6deg);"
+          >
+            <span class="font-heavy uppercase text-xs tracking-widest text-ink-900">
+              VERIFICATION ·
+            </span>
+            <span
+              id="puzzle-question"
+              class="font-display text-ink-900 text-lg leading-none"
+              aria-live="polite"
+            >· · ·</span>
+            <input
+              id="puzzle-answer"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              aria-label="Answer"
+              class="w-20 bg-paper border-3 border-ink-900 px-2 py-1 text-ink-900 text-sm font-mono focus:outline-none focus:shadow-comic-sm transition-shadow"
+            />
+            <span
+              id="puzzle-feedback"
+              class="font-display text-xl leading-none"
+              aria-live="polite"
+            ></span>
+            <button
+              id="puzzle-refresh"
+              type="button"
+              class="ml-auto font-heavy uppercase text-[0.65rem] tracking-widest text-ink-900 hover:text-pow-600 transition-colors"
+              aria-label="New puzzle"
+            >↻ REROLL</button>
+          </div>
+
+          <button
+            id="contact-submit"
+            type="submit"
+            disabled
+            class="btn-primary w-full justify-center opacity-50 cursor-not-allowed"
+          >
+            <span id="contact-submit-label">VERIFY FIRST</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2z"></path></svg>
+          </button>
+
+          <p id="contact-status" class="text-sm font-heavy uppercase tracking-wider text-ink-800" aria-live="polite"></p>
+        </form>
+
+        <p class="text-xs text-ink-700 mt-6 pt-4 border-t-3 border-ink-900 leading-relaxed">
+          Contracts land directly in my inbox. If the raven gets lost,
+          LinkedIn is the fastest fallback.
+        </p>
+      </div>
+    </div>
+
+    <!-- Alternative dialogue choices, existing comic direct-link cards -->
+    <div class="space-y-5 anim-in anim-stagger-2">
+      <div class="flex items-center gap-3">
+        <span
+          class="inline-block bg-zap-400 text-ink-900 font-display text-lg px-3 py-1 border-3 border-ink-900 shadow-comic-sm"
+          style="transform: rotate(-4deg);"
+        >OR</span>
+        <span class="font-ui text-[0.7rem] text-ink-700 tracking-[0.25em]">PICK A FASTER DIALOGUE</span>
+      </div>
+
+      <a
+        href={config.links.linkedin}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="panel panel-flat bg-zap-200 flex items-center gap-4 text-ink-900 hover:bg-zap-400 transition-colors"
+        style="transform: rotate(-0.9deg);"
+      >
+        <span class="flex-shrink-0 inline-flex items-center justify-center w-12 h-12 bg-ink-900 text-paper border-3 border-ink-900">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05a3.73 3.73 0 0 1 3.36-1.84c3.59 0 4.26 2.36 4.26 5.44v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
+        </span>
+        <div>
+          <div class="font-display text-2xl leading-none text-ink-900">LinkedIn</div>
+          <div class="font-heavy uppercase text-xs tracking-wider text-ink-800 mt-1">
+            linkedin.com/in/pr-saketh007
+          </div>
+        </div>
+        <span class="ml-auto font-display text-2xl text-pow-500 leading-none" aria-hidden="true">▶</span>
+      </a>
+
+      <a
+        href={config.links.github}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="panel panel-flat bg-paper flex items-center gap-4 text-ink-900 hover:bg-pow-100 transition-colors"
+        style="transform: rotate(0.7deg);"
+      >
+        <span class="flex-shrink-0 inline-flex items-center justify-center w-12 h-12 bg-ink-900 text-paper border-3 border-ink-900">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12a11.5 11.5 0 0 0 7.86 10.93c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.38-3.88-1.38-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.25 3.34.96.1-.74.4-1.25.72-1.54-2.55-.29-5.23-1.27-5.23-5.67 0-1.25.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.15 1.18a10.93 10.93 0 0 1 5.73 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.59.23 2.76.11 3.05.73.8 1.18 1.83 1.18 3.08 0 4.41-2.69 5.38-5.25 5.66.41.35.77 1.05.77 2.12v3.14c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+        </span>
+        <div>
+          <div class="font-display text-2xl leading-none text-ink-900">GitHub</div>
+          <div class="font-heavy uppercase text-xs tracking-wider text-ink-800 mt-1">
+            github.com/sakethpilli007
+          </div>
+        </div>
+        <span class="ml-auto font-display text-2xl text-pow-500 leading-none" aria-hidden="true">▶</span>
+      </a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Floating "!" quest marker */
+  .bob { animation: bob 1.8s ease-in-out infinite; }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0) rotate(8deg); }
+    50%      { transform: translateY(-4px) rotate(-6deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bob { animation: none; }
+  }
+
+  /* Little speech-bubble tail poking toward the portrait */
+  .speech-bubble::before {
+    content: "";
+    position: absolute;
+    left: -14px;
+    top: 32px;
+    width: 0;
+    height: 0;
+    border-top: 14px solid transparent;
+    border-bottom: 14px solid transparent;
+    border-right: 16px solid #050504;
+  }
+  .speech-bubble::after {
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: 34px;
+    width: 0;
+    height: 0;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    border-right: 14px solid #fff9e8;
+  }
+  @media (max-width: 767px) {
+    .speech-bubble::before,
+    .speech-bubble::after { display: none; }
+  }
+</style>
+
+<script>
+  // ─── Contact form: Web3Forms AJAX submit (logic unchanged) ────────────
+  const card = document.getElementById('contact-card') as HTMLDivElement | null;
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
+  const statusEl = document.getElementById('contact-status') as HTMLParagraphElement | null;
+  const submitBtn = document.getElementById('contact-submit') as HTMLButtonElement | null;
+  const submitLabel = document.getElementById('contact-submit-label') as HTMLSpanElement | null;
+  const puzzleQ = document.getElementById('puzzle-question') as HTMLSpanElement | null;
+  const puzzleA = document.getElementById('puzzle-answer') as HTMLInputElement | null;
+  const puzzleFb = document.getElementById('puzzle-feedback') as HTMLSpanElement | null;
+  const puzzleRefresh = document.getElementById('puzzle-refresh') as HTMLButtonElement | null;
+
+  let puzzleExpected: number | null = null;
+  let puzzleSolved = false;
+
+  function randInt(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function newPuzzle() {
+    if (!puzzleQ || !puzzleA || !puzzleFb) return;
+    const ops: Array<'+' | '-' | '×'> = ['+', '-', '×'];
+    const op = ops[randInt(0, ops.length - 1)];
+    let a: number, b: number, result: number;
+    if (op === '+') {
+      a = randInt(3, 19);
+      b = randInt(2, 19);
+      result = a + b;
+    } else if (op === '-') {
+      a = randInt(10, 25);
+      b = randInt(2, 9);
+      result = a - b;
+    } else {
+      a = randInt(2, 9);
+      b = randInt(2, 9);
+      result = a * b;
+    }
+    puzzleExpected = result;
+    puzzleQ.textContent = `${a} ${op} ${b} =`;
+    puzzleA.value = '';
+    puzzleFb.textContent = '';
+    puzzleFb.className = 'font-display text-xl leading-none text-ink-700';
+    puzzleSolved = false;
+    lockSubmit();
+  }
+
+  function lockSubmit() {
+    if (!submitBtn || !submitLabel) return;
+    submitBtn.disabled = true;
+    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    submitLabel.textContent = 'VERIFY FIRST';
+  }
+
+  function unlockSubmit() {
+    if (!submitBtn || !submitLabel) return;
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    submitLabel.textContent = 'ACCEPT QUEST';
+  }
+
+  function validatePuzzle() {
+    if (!puzzleA || !puzzleFb || puzzleExpected === null) return;
+    const raw = puzzleA.value.trim();
+    if (raw === '') {
+      puzzleFb.textContent = '';
+      puzzleFb.className = 'font-display text-xl leading-none text-ink-700';
+      puzzleSolved = false;
+      lockSubmit();
+      return;
+    }
+    const n = Number(raw);
+    if (Number.isFinite(n) && n === puzzleExpected) {
+      puzzleFb.textContent = '✓';
+      puzzleFb.className = 'font-display text-xl leading-none text-pow-600';
+      puzzleSolved = true;
+      unlockSubmit();
+    } else {
+      puzzleFb.textContent = '✕';
+      puzzleFb.className = 'font-display text-xl leading-none text-pow-600';
+      puzzleSolved = false;
+      lockSubmit();
+    }
+  }
+
+  if (puzzleQ && puzzleA && puzzleFb && puzzleRefresh) {
+    puzzleA.addEventListener('input', validatePuzzle);
+    puzzleRefresh.addEventListener('click', newPuzzle);
+    newPuzzle();
+  }
+
+  function setStatus(text: string, tone: 'neutral' | 'ok' | 'err' | 'busy') {
+    if (!statusEl) return;
+    statusEl.textContent = text;
+    statusEl.className =
+      'text-sm font-heavy uppercase tracking-wider ' +
+      (tone === 'ok'
+        ? 'text-pow-600'
+        : tone === 'err'
+        ? 'text-pow-600'
+        : tone === 'busy'
+        ? 'text-ink-800'
+        : 'text-ink-800');
+  }
+
+  if (form && card && submitBtn && submitLabel) {
+    const endpoint = card.dataset.endpoint || '';
+    const accessKey = card.dataset.accessKey || '';
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+
+      if (!puzzleSolved) {
+        setStatus('Complete the verification to send.', 'err');
+        if (puzzleA) puzzleA.focus();
+        return;
+      }
+
+      // Honeypot: Web3Forms's `botcheck`, silently drop if populated.
+      if (fd.get('botcheck')) {
+        setStatus('Sent. Thanks for the message.', 'ok');
+        form.reset();
+        return;
+      }
+
+      const name = String(fd.get('name') ?? '').trim();
+      const email = String(fd.get('email') ?? '').trim();
+      const message = String(fd.get('message') ?? '').trim();
+      const subject = String(fd.get('subject') ?? '').trim();
+
+      if (!name || !email || !message) {
+        setStatus('Name, email, and message are all required.', 'err');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setStatus("That email doesn't look right.", 'err');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitLabel.textContent = 'SENDING…';
+      setStatus('Sending the raven…', 'busy');
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            access_key: accessKey,
+            name,
+            email,
+            subject: subject
+              ? `[prsaketh.com] ${subject}`
+              : `New message from ${name} via prsaketh.com`,
+            message,
+            from_name: 'prsaketh.com contact form',
+          }),
+        });
+
+        let payload: any = null;
+        try {
+          payload = await res.json();
+        } catch {
+          /* non-JSON body; treat as unknown */
+        }
+
+        if (res.ok && payload && payload.success) {
+          form.reset();
+          newPuzzle();
+          setStatus("QUEST ACCEPTED. I'll reply soon.", 'ok');
+          submitLabel.textContent = 'SENT ✓';
+          setTimeout(() => {
+            submitLabel.textContent = 'ACCEPT QUEST';
+            submitBtn.disabled = false;
+          }, 2500);
+        } else {
+          console.warn('Web3Forms error', res.status, payload);
+          const msg =
+            (payload && (payload.message || payload.error)) ||
+            `HTTP ${res.status}`;
+          setStatus(
+            `Couldn't send (${msg}). Try LinkedIn instead.`,
+            'err',
+          );
+          submitLabel.textContent = 'ACCEPT QUEST';
+          submitBtn.disabled = false;
+        }
+      } catch (err) {
+        console.warn('Network error', err);
+        setStatus(
+          "Network hiccup. Couldn't reach the form service. Try again or DM me on LinkedIn.",
+          'err',
+        );
+        submitLabel.textContent = 'ACCEPT QUEST';
+        submitBtn.disabled = false;
+      }
+    });
+  }
+</script>

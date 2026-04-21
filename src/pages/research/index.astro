@@ -1,0 +1,242 @@
+---
+/**
+ * Research, BACK-ISSUE RACK.
+ *
+ * Concept: each paper is a mock pulp-journal cover. Issue number, big cover
+ * glyph, pull-quote tag list, and a "READ ISSUE" CTA. IP-protected papers
+ * get a "CLASSIFIED" censor bar. Papers whose full draft is still being
+ * typeset get a "DRAFT PRINTING" banner.
+ *
+ * Design notes on this revision:
+ *   - No fake journal branding (previously called "Arcane Quarterly").
+ *   - Covers only use LIGHT backgrounds (red / yellow / paper). No dark
+ *     accent, because dark cards ended up with paper-on-dark text that was
+ *     inconsistent with the rest of the site's readability pass.
+ *   - Removed the min-height on the cover body. Cards grow to content, no
+ *     more dead gap under the cover-stories list.
+ *
+ * Data still comes from papers[] in config.ts. Each paper gets a
+ * hand-tuned cover style per slug so each issue looks distinct.
+ */
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { papers } from '~/config';
+
+type CoverStyle = {
+  glyph: string;                           // big motif glyph on the cover
+  accent: 'red' | 'yellow' | 'paper';      // light palette only
+  motto: string;                           // short pull-quote under the masthead
+  // Optional per-slug position override for the big ghost glyph. Default is
+  // anchored bottom-right of the card; some glyphs (e.g. the tildes for
+  // gravitational waves) look better nudged further down-and-left.
+  glyphPosClass?: string;
+  glyphRotateDeg?: number;
+};
+
+const coverBySlug: Record<string, CoverStyle> = {
+  'elliptic-functions': {
+    glyph: '℘',
+    accent: 'red',
+    motto: 'THE LATTICE SPECIAL',
+  },
+  'gravitational-waves': {
+    glyph: '~~',
+    accent: 'yellow',
+    motto: 'OUTER SPACE SPECIAL',
+    // Tildes read better nudged down and toward the centre-left so the
+    // "wave" motif sits beneath the text instead of hugging the edge.
+    glyphPosClass: 'left-6 -bottom-12',
+    glyphRotateDeg: -8,
+  },
+  'silicon-crystallography': {
+    // Outlined hexagon reads as "crystal lattice" cue; the display font has
+    // no lowercase, so the obvious "Si" just renders as a mystery word.
+    glyph: '⬡',
+    accent: 'paper',
+    motto: 'CRYSTAL CUT SPECIAL',
+    // Nudged a little higher than the default (-bottom-6) so the outline
+    // sits flush with the barcode strip instead of dipping below it.
+    // -bottom-2.5 = half a step lower than -bottom-2 (tiny tuning nudge).
+    glyphPosClass: 'right-2 -bottom-2.5',
+  },
+};
+
+function sortKey(date: string): number {
+  const months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+  const low = date.toLowerCase();
+  const year = (low.match(/\d{4}/) || ['0'])[0];
+  let mIdx = -1;
+  for (let i = 0; i < months.length; i++) {
+    if (low.includes(months[i])) { mIdx = i; break; }
+  }
+  return parseInt(year, 10) * 12 + (mIdx >= 0 ? mIdx : 0);
+}
+
+const issues = [...papers].sort((a, b) => sortKey(b.date) - sortKey(a.date));
+
+// Light-palette body / masthead / glyph-ghost colours.
+function bgClass(a: CoverStyle['accent']) {
+  return a === 'red'    ? 'bg-pow-500 text-paper' :
+         a === 'yellow' ? 'bg-zap-400 text-ink-900' :
+                          'bg-paper text-ink-900';
+}
+function mastheadBg(a: CoverStyle['accent']) {
+  // masthead always dark, gives every cover the same strong header strip
+  return 'bg-ink-900 text-paper';
+}
+function glyphTone(a: CoverStyle['accent']) {
+  return a === 'red'    ? 'text-paper/35' :
+         a === 'yellow' ? 'text-ink-900/20' :
+                          'text-ink-900/12';
+}
+---
+
+<BaseLayout
+  title="Research"
+  description="Papers and research notes by PR Saketh. Elliptic functions, gravitational waves, pharmacokinetics, DFT materials science."
+>
+  <!-- ── NEWSSTAND BANNER ─────────────────────────────────────────────── -->
+  <section class="container-wide pt-12 pb-4">
+    <div class="flex items-end justify-between flex-wrap gap-3 mb-2">
+      <div>
+        <span class="eyebrow">Back-issue rack</span>
+        <h1 class="font-display text-5xl md:text-7xl leading-[0.9] text-ink-900">
+          Breakin' boundries
+        </h1>
+      </div>
+      <span class="font-ui text-xs text-ink-700 tracking-[0.25em]">
+        BACK ISSUES · {String(issues.length).padStart(2, '0')}
+      </span>
+    </div>
+
+    <p class="text-ink-800 leading-relaxed max-w-2xl mt-3">
+      Each cover is one paper. Click through to the issue for the full
+      abstract and, where it's live, a section-by-section deep dive. Where
+      the draft is still being typeset, a banner says so up front.
+    </p>
+
+    <div class="divider-jagged mt-6"></div>
+  </section>
+
+  <!-- ── ISSUE RACK ───────────────────────────────────────────────────── -->
+  <section class="container-wide pb-24">
+    <ul class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {issues.map((p, i) => {
+        const cover = coverBySlug[p.slug] ?? { glyph: '?', accent: 'paper', motto: 'SPECIAL ISSUE' };
+        const tilt = (i % 2 === 0 ? -0.7 : 0.9) * (1 + (i % 3) * 0.15);
+        const issueNo = String(i + 1).padStart(2, '0');
+        const isCurrent = i === 0;
+        const isClassified = !!p.ipProtected;
+        const isDraft = !p.fullPaperAvailable && !p.ipProtected;
+        const href = `/research/${p.slug}`;
+
+        return (
+          <li
+            class={`relative border-3 border-ink-900 shadow-comic anim-in anim-stagger-${Math.min(i + 1, 6)} h-full`}
+            style={`transform: rotate(${tilt}deg);`}
+          >
+            <a
+              href={href}
+              class={`flex flex-col h-full ${bgClass(cover.accent)} relative overflow-hidden hover:translate-x-[2px] hover:translate-y-[2px] transition-transform`}
+            >
+              <!-- Masthead strip. flex-wrap so on narrow cards the date
+                   drops to a new line instead of being crushed / overlapped. -->
+              <div class={`${mastheadBg(cover.accent)} border-b-3 border-ink-900 px-3 py-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1`}>
+                <span class="font-display text-sm tracking-wider leading-none whitespace-nowrap">
+                  ISSUE №{issueNo}
+                </span>
+                <span class="font-ui text-[0.6rem] tracking-[0.2em] opacity-85 whitespace-nowrap">
+                  {p.date.toUpperCase()}
+                </span>
+              </div>
+
+              <!-- Cover body. flex-1 so when the grid stretches a short card
+                   up to a taller neighbour, the body absorbs the extra height
+                   instead of leaving a dead gap above the barcode strip. -->
+              <div class="relative flex-1 px-5 pt-5 pb-6">
+                <span
+                  class={`absolute ${cover.glyphPosClass ?? 'right-2 -bottom-6'} font-display leading-none select-none pointer-events-none ${glyphTone(cover.accent)}`}
+                  style={`font-size: clamp(7rem, 22vw, 11rem); transform: rotate(${cover.glyphRotateDeg ?? -6}deg);`}
+                  aria-hidden="true"
+                >
+                  {cover.glyph}
+                </span>
+
+                <p class="font-heavy uppercase text-xs tracking-widest mb-3 opacity-85">
+                  {cover.motto}
+                </p>
+
+                <h2 class="relative font-display text-3xl md:text-[2rem] leading-[0.95] tracking-wide pr-2">
+                  {p.title}
+                </h2>
+
+                <p class="relative font-ui text-[0.7rem] tracking-[0.2em] mt-3 opacity-80">
+                  BY {p.authors.toUpperCase()}
+                </p>
+
+                <!-- Cover stories / tags -->
+                <ul class="relative mt-4 space-y-1.5">
+                  {p.tags.map((t) => (
+                    <li class="flex items-center gap-2 text-sm leading-snug">
+                      <span class="font-display leading-none">○</span>
+                      <span class="font-heavy uppercase text-[0.75rem] tracking-wider">
+                        {t}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <!-- Bottom barcode / CTA strip. mt-auto pins it to the bottom
+                   of the (possibly stretched) card so every row's READ ISSUE
+                   bar lines up across the grid. -->
+              <div class={`${mastheadBg(cover.accent)} border-t-3 border-ink-900 px-3 py-2 flex items-center justify-between gap-3 mt-auto`}>
+                <span class="font-mono text-[0.65rem] tracking-widest select-none" aria-hidden="true">
+                  |||·|··|·||·|·||··|
+                </span>
+                <span class="font-display text-sm leading-none">
+                  READ ISSUE ▶
+                </span>
+              </div>
+            </a>
+
+            <!-- CURRENT ISSUE stamp, pulled fully out of the card's top-left
+                 corner so it never rides over the masthead text. Nudged
+                 further out so the stamp clears the dark masthead strip
+                 on desktop (previous -top-5 / -left-4 was clipping ISSUE №01). -->
+            {isCurrent && (
+              <span
+                class="absolute -top-7 -left-7 z-10 inline-block bg-zap-400 text-ink-900 font-display text-sm px-3 py-1 border-3 border-ink-900 shadow-comic-sm whitespace-nowrap"
+                style="transform: rotate(-10deg);"
+              >
+                ★ CURRENT ISSUE
+              </span>
+            )}
+
+            <!-- WORK IN PROGRESS banner, parked well below the masthead
+                 so it can never ride over the issue number or date. -->
+            {isDraft && (
+              <span
+                class="absolute top-[58%] -right-3 inline-block bg-paper text-ink-900 font-display text-xs tracking-wider px-2 py-1 border-3 border-ink-900 shadow-comic-sm whitespace-nowrap"
+                style="transform: rotate(8deg);"
+              >
+                📰 WORK IN PROGRESS
+              </span>
+            )}
+
+            <!-- CLASSIFIED censor stamp. Anchored to the bottom-left so it
+                 sits on top of the glyph / barcode area and leaves the
+                 title and masthead fully readable. -->
+            {isClassified && (
+              <span
+                class="absolute left-3 bottom-12 inline-block bg-pow-500 text-paper font-display text-lg px-3 py-1 border-3 border-ink-900 shadow-comic tracking-[0.3em] pointer-events-none"
+                style="transform: rotate(-10deg);"
+              >
+                CLASSIFIED
+              </span>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  </section>
+</BaseLayout>

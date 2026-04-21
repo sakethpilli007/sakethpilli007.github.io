@@ -1,0 +1,356 @@
+---
+/**
+ * Resume, captcha styled as a comic "unlock" minigame.
+ *
+ * Functionality is unchanged (click nodes in ascending order; on solve, the
+ * CV download link reveals and HEAD-checks the PDF). Only the visual skin is
+ * swapped for comic panels, yellow starburst nodes with black borders, red
+ * "SOLVED" stamp on the unlock reveal, etc.
+ */
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHeader from '~/components/PageHeader.astro';
+---
+
+<BaseLayout
+  title="Resume"
+  description="CV / resume download, gated by a tiny human-verification puzzle."
+>
+  <PageHeader
+    eyebrow="Resume"
+    title="DOWNLOAD CV"
+    lead="One small puzzle between you and the PDF.  Gotta keep the webscrapers out after all"
+  />
+
+  <section class="container-prose pb-24">
+    <div class="panel anim-in anim-stagger-1">
+      <!-- Corner badge, "UNLOCK MINI-GAME" ticket -->
+      <span
+        class="absolute -top-4 -right-4 inline-block bg-pow-500 text-paper font-display text-sm tracking-wider px-3 py-1 border-3 border-ink-900 shadow-comic-sm"
+        style="transform: rotate(7deg);"
+      >
+        ★ UNLOCK QUEST
+      </span>
+
+      <div class="flex items-start justify-between flex-wrap gap-4 mb-5">
+        <div>
+          <span class="eyebrow">Level 1 · Human check</span>
+          <h2 class="font-display text-3xl md:text-4xl leading-none text-ink-900">
+            Tap the nodes in order
+          </h2>
+          <p class="mt-2 font-heavy uppercase text-xs tracking-wider text-ink-700">
+            Smallest first. If you miss, the board reshuffles. No stress.
+          </p>
+        </div>
+        <button
+          id="captcha-reshuffle"
+          type="button"
+          class="btn bg-zap-400 text-ink-900 text-xs"
+          aria-label="Reshuffle the puzzle"
+        >
+          ↻ Reshuffle
+        </button>
+      </div>
+
+      <!-- Puzzle arena, yellow paper with halftone dots for arcade vibe -->
+      <div
+        id="captcha-board"
+        class="relative w-full border-3 border-ink-900 bg-zap-100 overflow-hidden select-none shadow-comic-inset"
+        style="min-height: 320px; aspect-ratio: 4 / 3; background-image: radial-gradient(#000 1.2px, transparent 1.4px); background-size: 14px 14px;"
+        aria-label="Captcha: click numbers in ascending order"
+      >
+        <!-- Nodes injected here -->
+      </div>
+
+      <!-- Progress row, comic HUD -->
+      <div class="flex items-center gap-3 mt-4 flex-wrap">
+        <span
+          id="captcha-progress"
+          class="font-display text-2xl bg-ink-900 text-zap-400 px-3 py-0.5 border-3 border-ink-900"
+        >
+          0 / 6
+        </span>
+        <span
+          id="captcha-status"
+          class="font-heavy uppercase text-sm tracking-wider text-ink-900"
+          aria-live="polite"
+        >
+          Tap the smallest number first.
+        </span>
+      </div>
+
+      <!-- Download zone, revealed on success -->
+      <div id="captcha-result" class="mt-6 hidden anim-in">
+        <div class="relative border-3 border-ink-900 bg-pow-100 p-4 flex flex-wrap items-center justify-between gap-4 shadow-comic">
+          <span
+            class="absolute -top-4 left-4 inline-block bg-pow-500 text-paper font-display text-sm tracking-wider px-3 py-0.5 border-3 border-ink-900 shadow-comic-sm"
+            style="transform: rotate(-5deg);"
+          >
+            ✓ SOLVED!
+          </span>
+          <div class="flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-pow-600">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="font-heavy text-ink-900 text-sm uppercase tracking-wider">
+              Verified. Your download is ready.
+            </span>
+          </div>
+          <a id="captcha-download" href="#" download class="btn-primary">
+            Grab the PDF
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</BaseLayout>
+
+<!--
+  Scoped styles for the captcha nodes, comic version. Yellow disc with thick
+  black border and hard shadow; flips to pow-red on hover, solid-red with
+  paper text once solved.
+-->
+<style is:global>
+  .captcha-node {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    border: 3px solid #000;
+    background: #ffd21f;            /* zap-400 */
+    color: #050504;                 /* ink-900 */
+    font-family: 'Rubik Mono One', 'JetBrains Mono', monospace;
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    transform: translate(-50%, -50%) rotate(-4deg);
+    box-shadow: 4px 4px 0 0 #000;
+    transition:
+      transform 0.12s ease-out,
+      background-color 0.15s,
+      color 0.15s,
+      box-shadow 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    user-select: none;
+    /* star-ish clip so each node looks like a badge, not a generic circle */
+    clip-path: polygon(
+      50% 0%, 63% 18%, 80% 8%, 80% 26%, 100% 30%,
+      86% 50%, 100% 70%, 80% 74%, 80% 92%, 63% 82%,
+      50% 100%, 37% 82%, 20% 92%, 20% 74%, 0% 70%,
+      14% 50%, 0% 30%, 20% 26%, 20% 8%, 37% 18%
+    );
+  }
+  .captcha-node:hover {
+    transform: translate(-50%, -50%) rotate(4deg) scale(1.08);
+    background: #e53935;            /* pow-500 */
+    color: #fff9e8;                 /* paper */
+    box-shadow: 5px 5px 0 0 #000;
+  }
+  .captcha-node:active {
+    transform: translate(-50%, -50%) scale(0.92);
+    box-shadow: 1px 1px 0 0 #000;
+  }
+  .captcha-node.is-done {
+    background: #c62828;            /* pow-600 */
+    color: #fff9e8;
+    box-shadow: 2px 2px 0 0 #000;
+    transform: translate(-50%, -50%) rotate(0deg) scale(0.95);
+    pointer-events: none;
+  }
+</style>
+
+<script is:inline>
+  // ─── Captcha ───────────────────────────────────────────────────────────
+  // is:inline → Astro ships this script verbatim, no Vite/TS processing, no
+  // ESM wrapping. Safe plain JS; runs after DOMContentLoaded because of
+  // placement at the end of <body>. Logic is UNCHANGED from the previous
+  // version, only the status messages were tweaked for comic voice.
+  (function () {
+    var RESUME_URL = '/assets/documents/PR-Saketh-CV.pdf';
+    var NODES = 6;
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function log() {
+      try {
+        console.log.apply(console, ['[captcha]'].concat([].slice.call(arguments)));
+      } catch (e) {}
+    }
+
+    function init() {
+      log('init');
+      var board = $('captcha-board');
+      var progress = $('captcha-progress');
+      var statusEl = $('captcha-status');
+      var result = $('captcha-result');
+      var download = $('captcha-download');
+      var reshuffleBtn = $('captcha-reshuffle');
+
+      if (!board || !progress || !statusEl || !result || !download || !reshuffleBtn) {
+        console.warn('[captcha] missing DOM', {
+          board: !!board,
+          progress: !!progress,
+          statusEl: !!statusEl,
+          result: !!result,
+          download: !!download,
+          reshuffleBtn: !!reshuffleBtn,
+        });
+        return;
+      }
+
+      var next = 1;
+      var solved = false;
+
+      function rand(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function shuffled(arr) {
+        var a = arr.slice();
+        for (var i = a.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var tmp = a[i];
+          a[i] = a[j];
+          a[j] = tmp;
+        }
+        return a;
+      }
+
+      function placeNode(taken, w, h) {
+        w = w || 400;
+        h = h || 300;
+        var minDist = Math.max(68, Math.min(w, h) * 0.22);
+        for (var tries = 0; tries < 160; tries++) {
+          var x = rand(10, 90);
+          var y = rand(14, 86);
+          var ok = true;
+          for (var k = 0; k < taken.length; k++) {
+            var dx = ((taken[k].x - x) / 100) * w;
+            var dy = ((taken[k].y - y) / 100) * h;
+            if (Math.sqrt(dx * dx + dy * dy) < minDist) {
+              ok = false;
+              break;
+            }
+          }
+          if (ok) {
+            taken.push({ x: x, y: y });
+            return { x: x, y: y };
+          }
+        }
+        var fallback = { x: rand(10, 90), y: rand(14, 86) };
+        taken.push(fallback);
+        return fallback;
+      }
+
+      function onNodeClick(e) {
+        if (solved) return;
+        var btn = e.currentTarget;
+        var rank = Number(btn.getAttribute('data-rank'));
+        log('click rank=' + rank + ' next=' + next);
+        if (rank !== next) {
+          statusEl.textContent = 'NOPE! Reshuffling…';
+          statusEl.className = 'font-heavy uppercase text-sm tracking-wider text-pow-600';
+          setTimeout(render, 450);
+          return;
+        }
+        btn.classList.add('is-done');
+        next++;
+        progress.textContent = next - 1 + ' / ' + NODES;
+        if (next > NODES) {
+          solved = true;
+          statusEl.textContent = 'VERIFIED!';
+          statusEl.className = 'font-heavy uppercase text-sm tracking-wider text-pow-600';
+          unlock();
+        } else {
+          statusEl.textContent = 'Nice, now #' + next + '.';
+          statusEl.className = 'font-heavy uppercase text-sm tracking-wider text-ink-900';
+        }
+      }
+
+      function render() {
+        board.innerHTML = '';
+        result.classList.add('hidden');
+        next = 1;
+        solved = false;
+
+        var valSet = {};
+        var values = [];
+        while (values.length < NODES) {
+          var v = rand(7, 98);
+          if (!valSet[v]) {
+            valSet[v] = true;
+            values.push(v);
+          }
+        }
+        values.sort(function (a, b) {
+          return a - b;
+        });
+        var rankOf = {};
+        for (var i = 0; i < values.length; i++) rankOf[values[i]] = i + 1;
+
+        var display = shuffled(values);
+        var rect = board.getBoundingClientRect();
+        var taken = [];
+        log('render w=' + rect.width + ' h=' + rect.height + ' values=' + values.join(','));
+
+        for (var j = 0; j < display.length; j++) {
+          var val = display[j];
+          var pos = placeNode(taken, rect.width, rect.height);
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'captcha-node';
+          btn.style.left = pos.x + '%';
+          btn.style.top = pos.y + '%';
+          btn.textContent = String(val);
+          btn.setAttribute('data-value', String(val));
+          btn.setAttribute('data-rank', String(rankOf[val]));
+          btn.setAttribute('aria-label', 'Node with value ' + val);
+          btn.addEventListener('click', onNodeClick);
+          board.appendChild(btn);
+        }
+
+        progress.textContent = '0 / ' + NODES;
+        statusEl.textContent = 'Tap the smallest number first.';
+        statusEl.className = 'font-heavy uppercase text-sm tracking-wider text-ink-900';
+      }
+
+      function unlock() {
+        download.setAttribute('href', RESUME_URL);
+        result.classList.remove('hidden');
+        log('unlocked → ' + RESUME_URL);
+        if (typeof fetch === 'function') {
+          fetch(RESUME_URL, { method: 'HEAD' })
+            .then(function (r) {
+              if (!r.ok) {
+                statusEl.textContent =
+                  "Verified, but the PDF isn't up yet (HTTP " + r.status + ').';
+                statusEl.className = 'font-heavy uppercase text-sm tracking-wider text-pow-600';
+              }
+            })
+            .catch(function () {});
+        }
+      }
+
+      reshuffleBtn.addEventListener('click', render);
+
+      var rid;
+      window.addEventListener('resize', function () {
+        if (rid) window.clearTimeout(rid);
+        rid = window.setTimeout(render, 200);
+      });
+
+      setTimeout(render, 50);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+</script>

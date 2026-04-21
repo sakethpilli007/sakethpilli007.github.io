@@ -1,0 +1,32 @@
+{
+  "name": "sakethpilli007.github.io",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^4.16.0",
+    "@astrojs/tailwind": "^5.1.0",
+    "@astrojs/mdx": "^3.1.0",
+    "@astrojs/sitemap": "3.2.1",
+    "tailwindcss": "^3.4.0",
+    "remark-math": "^6.0.0",
+    "rehype-katex": "^7.0.0",
+    "katex": "^0.16.11",
+    "@fontsource/inter": "^5.1.0",
+    "@fontsource/jetbrains-mono": "^5.1.0",
+    "@fontsource/bangers": "^5.1.0",
+    "@fontsource/rubik-mono-one": "^5.1.0",
+    "@fontsource/archivo-black": "^5.1.0",
+    "@fontsource/comic-neue": "^5.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

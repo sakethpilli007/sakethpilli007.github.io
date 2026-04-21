@@ -1,0 +1,106 @@
+---
+/**
+ * ProjectCard, comic panel version.
+ *
+ * High-contrast dark text on paper/cream. No more text-ink-50 (invisible on
+ * paper). No more ring-based cards, this is a bordered panel with hard shadow
+ * and a slight per-index tilt. Featured projects get a yellow stamp in the
+ * corner. "Code" + live-demo links are full comic buttons.
+ */
+import type { Project } from '~/config';
+
+interface Props {
+  project: Project;
+  index?: number;
+}
+const { project, index = 0 } = Astro.props;
+const stagger = Math.min(Math.max(index, 1), 6);
+
+// Alternate tilt per card so the grid reads hand-placed, not AI-generated.
+const tilt = (index % 2 === 0 ? -1 : 1) * (0.4 + (index % 3) * 0.3);
+---
+
+<article
+  class={`relative bg-paper border-3 border-ink-900 shadow-comic p-5 flex flex-col h-full anim-in anim-stagger-${stagger}`}
+  style={`transform: rotate(${tilt}deg);`}
+>
+  <!-- Little issue-number stamp in the top-right, like "ISSUE 03" -->
+  <span
+    class="absolute -top-3 -right-3 inline-block bg-ink-900 text-paper font-ui text-[0.6rem] tracking-[0.25em] px-2 py-1 border-3 border-ink-900"
+    style="transform: rotate(6deg);"
+  >
+    №{String(project.order).padStart(2, '0')}
+  </span>
+
+  {project.featured && (
+    <span
+      class="absolute -top-4 -left-3 inline-block bg-zap-400 text-ink-900 font-display text-base px-2 py-0.5 border-3 border-ink-900 shadow-comic-sm"
+      style="transform: rotate(-8deg);"
+    >
+      ★ FEATURED
+    </span>
+  )}
+
+  <h3 class="font-display text-2xl md:text-3xl leading-none text-ink-900 tracking-wide mb-3 mt-1">
+    {project.title}
+  </h3>
+
+  <!-- Pitch = the yellow-highlighted hot take -->
+  <p class="font-heavy text-sm text-ink-900 mb-3 leading-snug bg-zap-200 inline-block px-2 py-1 border-l-4 border-pow-500 self-start">
+    {project.pitch}
+  </p>
+
+  <p class="text-ink-800 text-sm leading-relaxed mb-4 flex-1">
+    {project.description}
+  </p>
+
+  <div class="flex flex-wrap gap-1.5 mb-4">
+    {project.tags.map((t) => {
+      const cls =
+        t.kind === 'lang' ? 'tag-lang' :
+        t.kind === 'domain' ? 'tag-domain' : 'tag-method';
+      return <span class={cls}>{t.text}</span>;
+    })}
+  </div>
+
+  <!--
+    CTA row. Every project has at least one of {github, paper, live}; we
+    render them in that order. `flex-wrap` so three links still breathe on
+    narrow cards.
+  -->
+  <div class="flex flex-wrap items-center gap-2 pt-3 border-t-3 border-ink-900">
+    {project.github && (
+      <a
+        href={project.github}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn-ghost text-xs"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12a11.5 11.5 0 0 0 7.86 10.93c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.38-3.88-1.38-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.25 3.34.96.1-.74.4-1.25.72-1.54-2.55-.29-5.23-1.27-5.23-5.67 0-1.25.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.15 1.18a10.93 10.93 0 0 1 5.73 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.59.23 2.76.11 3.05.73.8 1.18 1.83 1.18 3.08 0 4.41-2.69 5.38-5.25 5.66.41.35.77 1.05.77 2.12v3.14c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+        Code
+      </a>
+    )}
+    {project.paper && (
+      <a
+        href={project.paper.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn-ghost text-xs"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg>
+        {project.paper.label}
+      </a>
+    )}
+    {project.live && (
+      <a
+        href={project.live.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn-primary text-xs"
+      >
+        {project.live.label}
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+      </a>
+    )}
+  </div>
+</article>

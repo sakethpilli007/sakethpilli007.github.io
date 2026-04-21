@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /resume
+Disallow: /assets/documents/
+
+Sitemap: https://sakethpilli007.github.io/sitemap-index.xml

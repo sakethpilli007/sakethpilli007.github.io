@@ -1,0 +1,197 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHeader from '~/components/PageHeader.astro';
+import { papers } from '~/config';
+
+const paper = papers.find((p) => p.slug === 'elliptic-functions')!;
+
+const toc = [
+  { id: 's1', label: '1. Motivation, lemniscatic arc length' },
+  { id: 's2', label: '2. The torus ℂ/Λ and compactness' },
+  { id: 's3', label: '3. Liouville\'s theorems' },
+  { id: 's4', label: '4. The Weierstrass ℘-function' },
+  { id: 's5', label: '5. The differential equation (℘\')² = 4℘³ − g₂℘ − g₃' },
+  { id: 's6', label: '6. Representation: E(Λ) = ℂ(℘, ℘\')' },
+  { id: 's7', label: '7. The j-invariant and the modular group' },
+  { id: 's8', label: '8. The Jacobi sn / cn / dn family' },
+  { id: 's9', label: '9. Application, the exact large-amplitude pendulum' },
+  { id: 's10', label: '10. Application, KdV cnoidal waves' },
+  { id: 's11', label: '11. Closing the loop, arc length of the lemniscate' },
+];
+---
+
+<BaseLayout title={paper.title} description={paper.abstract}>
+  <PageHeader eyebrow={`Research · ${paper.date} · Deep dive`} title={paper.title} />
+
+  <section class="container-wide pb-24 grid lg:grid-cols-[minmax(0,1fr)_260px] gap-10">
+    <!-- Main content -->
+    <article class="min-w-0">
+      <!-- Metadata -->
+      <div class="card anim-in anim-stagger-1 mb-10">
+        <div class="grid md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <span class="eyebrow mb-1">Authors</span>
+            <p class="text-ink-800">{paper.authors}</p>
+          </div>
+          <div>
+            <span class="eyebrow mb-1">Venue</span>
+            <p class="text-ink-800">{paper.venue}</p>
+          </div>
+          <div>
+            <span class="eyebrow mb-1">Topics</span>
+            <div class="flex flex-wrap gap-1.5 mt-1">
+              {paper.tags.map((t) => <span class="tag-domain">{t}</span>)}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="anim-in anim-stagger-2 space-y-6 text-ink-800 leading-relaxed">
+        <h2 class="text-2xl font-semibold">Abstract</h2>
+        <p>{paper.abstract}</p>
+
+        <section id="s1" class="scroll-mt-24 pt-8">
+          <h2 class="text-2xl font-semibold mb-3">1. Motivation, the lemniscatic arc length</h2>
+          <p>
+            The story starts with a deceptively simple curve, the lemniscate
+            of Bernoulli, and the problem of computing its arc length. The
+            integral doesn't close under elementary functions. This is the
+            symptom that elliptic integrals exist as a genuinely new class.
+          </p>
+        </section>
+
+        <section id="s2" class="scroll-mt-24 pt-8">
+          <h2 class="text-2xl font-semibold mb-3">2. The torus ℂ/Λ and compactness</h2>
+          <p>
+            A doubly-periodic meromorphic function lives naturally on the
+            quotient ℂ/Λ, where Λ = ℤω₁ ⊕ ℤω₂ is a rank-2 lattice. The
+            quotient is compact, which makes the entire theory, Liouville's
+            theorems, pole counts, the residue sum, fall out almost for free.
+          </p>
+        </section>
+
+        <section id="s3" class="scroll-mt-24 pt-8">
+          <h2 class="text-2xl font-semibold mb-3">3. Liouville's theorems</h2>
+          <p>
+            Four classical statements: a holomorphic elliptic function is
+            constant; the sum of residues in a fundamental parallelogram is
+            zero; every non-constant elliptic function has equal zero and pole
+            counts; zeros and poles sum to the same class mod Λ.
+          </p>
+        </section>
+
+        <section id="s4" class="scroll-mt-24 pt-8">
+          <h2 class="text-2xl font-semibold mb-3">4. The Weierstrass ℘-function</h2>
+          <p>
+            Construct ℘(z; Λ) = 1/z² + Σ [1/(z-ω)² − 1/ω²] over non-zero
+            lattice points ω. Show convergence, prove evenness, and establish
+            that ℘ is an elliptic function of order 2.
+          </p>
+        </section>
+
+        <section id="s5" class="scroll-mt-24 pt-8">
+          <h2 class="text-2xl font-semibold mb-3">5. The differential equation</h2>
+          <p>
+            (℘')² = 4℘³ − g₂℘ − g₃. The invariants g₂, g₃ are lattice sums.
+            This is the gateway to viewing ℘ as parameterizing an elliptic
+            curve y² = 4x³ − g₂x − g₃.
+          </p>
+        </section>
+
+        <section id="s6" class="scroll-mt-24 pt-8">
+          <h2 class="text-2xl font-semibold mb-3">6. Representation: E(Λ) = ℂ(℘, ℘')</h2>
+          <p>
+            Every elliptic function with lattice Λ is a rational function of ℘
+            and ℘'. Split into even and odd parts; the even part is a
+            rational function of ℘, the odd part is ℘' times a rational
+            function of ℘.
+          </p>
+        </section>
+
+        <section id="s7" class="scroll-mt-24 pt-8">
+          <h2 class="text-2xl font-semibold mb-3">7. The j-invariant and the modular group</h2>
+          <p>
+            j(Λ) = 1728·g₂³ / (g₂³ − 27g₃²). Classifies lattices up to complex
+            multiplication and connects to SL(2,ℤ) acting on the upper
+            half-plane.
+          </p>
+        </section>
+
+        <section id="s8" class="scroll-mt-24 pt-8">
+          <h2 class="text-2xl font-semibold mb-3">8. The Jacobi sn / cn / dn family</h2>
+          <p>
+            A more applied parameterization. sn(u, k) generalizes sine; cn and
+            dn are its trigonometric cousins. The modulus k controls how far
+            from elementary-trig we sit.
+          </p>
+        </section>
+
+        <section id="s9" class="scroll-mt-24 pt-8">
+          <h2 class="text-2xl font-semibold mb-3">9. Application, the exact large-amplitude pendulum</h2>
+          <p>
+            Small-angle approximation gives simple harmonic motion; drop it,
+            and the pendulum period involves a complete elliptic integral of
+            the first kind. The motion itself is sn-function.
+          </p>
+        </section>
+
+        <section id="s10" class="scroll-mt-24 pt-8">
+          <h2 class="text-2xl font-semibold mb-3">10. Application, KdV cnoidal waves</h2>
+          <p>
+            The Korteweg–de Vries equation admits travelling-wave solutions
+            built from cn², the "cnoidal" waves. Soliton limit recovers sech²
+            as the modulus k → 1.
+          </p>
+        </section>
+
+        <section id="s11" class="scroll-mt-24 pt-8">
+          <h2 class="text-2xl font-semibold mb-3">11. Closing the loop</h2>
+          <p>
+            With the machinery built, re-express the lemniscatic arc length
+            from §1 in closed form via the complete elliptic integral. The
+            paper ends where it began, with a concrete computation that
+            motivated the entire framework.
+          </p>
+        </section>
+
+        <div class="card mt-10">
+          <span class="eyebrow">Full PDF</span>
+          <p class="text-ink-800 text-sm">
+            The full paper (with all proofs, figures, and worked examples) is
+            being typeset in LaTeX with KaTeX-compatible math. It'll be posted
+            here once the final pass is done. Reach out on LinkedIn if you'd
+            like an advance draft.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-10">
+        <a href="/research" class="link-underline text-pow-600 text-sm inline-flex items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          Back to all research
+        </a>
+      </div>
+    </article>
+
+    <!-- Sticky TOC -->
+    <aside class="hidden lg:block">
+      <nav class="sticky top-24 border-l border-ink-800 pl-4 text-sm anim-in anim-stagger-2">
+        <p class="eyebrow mb-3">On this page</p>
+        <ul class="space-y-2">
+          {
+            toc.map((t) => (
+              <li>
+                <a
+                  href={`#${t.id}`}
+                  class="text-ink-800 hover:text-pow-600 transition-colors block leading-snug"
+                >
+                  {t.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </aside>
+  </section>
+</BaseLayout>

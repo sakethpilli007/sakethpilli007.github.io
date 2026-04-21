@@ -1,0 +1,121 @@
+---
+import '~/styles/global.css';
+import Nav from '~/components/Nav.astro';
+import Footer from '~/components/Footer.astro';
+import { ViewTransitions } from 'astro:transitions';
+import { config } from '~/config';
+
+interface Props {
+  title?: string;
+  description?: string;
+  showNav?: boolean;
+  /**
+   * If true, omit the paper background + text color on <body>. Used by the
+   * 404 / GAME OVER screen which wants a pitch-black canvas.
+   */
+  bodyDark?: boolean;
+}
+
+const {
+  title = config.name.formal,
+  description = config.tagline,
+  showNav = true,
+  bodyDark = false,
+} = Astro.props;
+
+const pageTitle =
+  title === config.name.formal ? title : `${title} · ${config.name.formal}`;
+
+const bodyClasses = [
+  'min-h-screen flex flex-col',
+  bodyDark ? 'bg-ink-900 text-paper' : '',
+].filter(Boolean).join(' ');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#fff9e8" />
+    <meta name="author" content={config.name.formal} />
+    <!-- Canonical URL. Astro.url reflects the final built URL on GH Pages,
+         so the canonical link stays correct under `npm run build`. -->
+    <link rel="canonical" href={Astro.url.toString()} />
+    <!-- Open Graph: title, description, URL, type, image. OG image points
+         at the portrait so link previews in Slack/Discord/iMessage show a
+         face instead of a generic blank card. -->
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url.toString()} />
+    <meta property="og:site_name" content={config.name.formal} />
+    <meta property="og:image" content={new URL('/assets/images/saketh.jpg', Astro.url).toString()} />
+    <meta property="og:image:alt" content={`${config.name.formal} portrait`} />
+    <!-- Twitter: mirror the OG tags explicitly since some clients don't
+         fall back to og:* automatically. -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL('/assets/images/saketh.jpg', Astro.url).toString()} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <title>{pageTitle}</title>
+    <ViewTransitions />
+  </head>
+  <body class={bodyClasses}>
+    {showNav && <Nav />}
+    <main class="flex-1" transition:animate="fade">
+      <slot />
+    </main>
+    <Footer />
+
+    <!-- POW! click-burst layer. Stickers get appended here by the script below. -->
+    <div id="pow-layer" aria-hidden="true"></div>
+
+    <script is:inline>
+      /* ─── POW! click effect ──────────────────────────────────────────────
+         On clicks inside interactive elements, spawn a comic sticker at the
+         pointer with a random onomatopoeia. Honors prefers-reduced-motion.
+         `is:inline` because this is trivial plain JS; no Vite processing. */
+      (function () {
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduced) return;
+
+        var WORDS = ['POW!', 'BAM!', 'ZAP!', 'WHAM!', 'BOOM!', 'KAPOW!', 'ZAP!', 'WHACK!', 'SPLAT!', 'THWIP!'];
+        var VARIANTS = ['', 'variant-red', 'variant-white'];
+        var INTERACTIVE = 'a, button, [role="button"], input[type="submit"], input[type="button"], .captcha-node, summary';
+
+        function spawn(x, y) {
+          var layer = document.getElementById('pow-layer');
+          if (!layer) return;
+          var el = document.createElement('div');
+          el.className = 'pow-sticker ' + VARIANTS[(Math.random() * VARIANTS.length) | 0];
+          el.textContent = WORDS[(Math.random() * WORDS.length) | 0];
+          // Small random offset so sticker doesn't cover pointer exactly.
+          var dx = (Math.random() - 0.5) * 40;
+          var dy = (Math.random() - 0.5) * 20 - 16;
+          el.style.left = (x + dx) + 'px';
+          el.style.top  = (y + dy) + 'px';
+          layer.appendChild(el);
+          // Remove once animation completes (CSS fills forward → clean up).
+          setTimeout(function () { el.remove(); }, 500);
+        }
+
+        function handler(e) {
+          var t = e.target;
+          if (!(t instanceof Element)) return;
+          if (!t.closest || !t.closest(INTERACTIVE)) return;
+          // Use clientX/Y so it lines up with the viewport layer.
+          spawn(e.clientX, e.clientY);
+        }
+
+        document.addEventListener('click', handler, true);
+        // Keep working across Astro view-transitions (listener is attached
+        // to document, so it persists, nothing else to re-wire).
+      })();
+    </script>
+  </body>
+</html>
