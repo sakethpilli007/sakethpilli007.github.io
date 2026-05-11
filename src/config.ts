@@ -227,6 +227,9 @@ export type Paper = {
   depth: 'deep' | 'abstract';
   fullPaperAvailable: boolean;
   ipProtected?: boolean;
+  // Optional external link to the full paper (e.g. ResearchGate, arXiv, journal page).
+  paperUrl?: string;
+  paperHost?: string; // human-readable host label, e.g. "ResearchGate"
 };
 
 export const papers: Paper[] = [
@@ -240,7 +243,10 @@ export const papers: Paper[] = [
       "Develops the theory of doubly-periodic meromorphic functions from first principles. Beginning with compactness of the torus ℂ/Λ, we derive Liouville's theorems, construct the Weierstrass ℘-function and its differential equation, prove the representation theorem E(Λ) = ℂ(℘, ℘'), introduce the j-invariant and the modular group, and close with the Jacobi sn/cn/dn family and three worked applications: the exact large-amplitude pendulum, KdV cnoidal waves, and the lemniscatic arc length that started it all.",
     tags: ['Complex Analysis', 'Elliptic Curves', 'Modular Forms'],
     depth: 'deep',
-    fullPaperAvailable: false,
+    fullPaperAvailable: true,
+    paperUrl:
+      'https://www.researchgate.net/publication/404227489_The_Theory_Properties_and_Applications_of_Elliptic_Functions',
+    paperHost: 'ResearchGate',
   },
   {
     slug: 'gravitational-waves',
