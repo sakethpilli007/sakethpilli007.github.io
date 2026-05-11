@@ -19,6 +19,7 @@ export const config = {
   links: {
     github: 'https://github.com/sakethpilli007',
     linkedin: 'https://linkedin.com/in/pr-saketh007',
+    researchgate: 'https://www.researchgate.net/profile/Saketh-Pilli',
     shadertoy: 'https://www.shadertoy.com/view/tcGcRR',
   },
   stats: [
